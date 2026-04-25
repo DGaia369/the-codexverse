@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect, useMemo, useState } from 'react';
+import { Suspense, useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { createClient } from '@supabase/supabase-js';
 
@@ -188,7 +188,7 @@ function getPathwayCTA(pathway: string | null | undefined) {
   }
 }
 
-export default function PathwayPage() {
+function PathwayContent() {
   const searchParams = useSearchParams();
   const sessionId = searchParams.get('session_id');
 
@@ -381,5 +381,13 @@ and take one step you will actually complete.`;
         </div>
       </div>
     </main>
+  );
+}
+
+export default function PathwayPage() {
+  return (
+    <Suspense fallback={null}>
+      <PathwayContent />
+    </Suspense>
   );
 }
