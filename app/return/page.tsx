@@ -59,8 +59,15 @@ if (!emailIsValid) {
 
     const result = await res.json();
 
-    if (result.ok && result.routing) {
-  setRouting(result.routing);
+if (result.ok && result.routing) {
+  const cleanRouting = {
+    door: result.routing.door || "unknown",
+    pathway: result.routing.pathway || "unknown",
+    session_id: result.routing.session_id || "unknown",
+  };
+
+  setRouting(cleanRouting);
+  localStorage.setItem("codexverse_routing", JSON.stringify(cleanRouting));
 }
   
     console.log("API result:", result);
@@ -213,10 +220,12 @@ if (!emailIsValid) {
 
             <a
   href={
-    routing
-      ? `/door?door=${encodeURIComponent(routing.door ?? "")}&pathway=${encodeURIComponent(routing.pathway ?? "")}&session_id=${encodeURIComponent(routing.session_id ?? "")}`
-      : "/door"
-  }
+  routing
+    ? `/door?door=${encodeURIComponent(routing.door ?? "")}&pathway=${encodeURIComponent(
+        routing.pathway ?? ""
+      )}&session_id=${encodeURIComponent(routing.session_id ?? "")}`
+    : "/door"
+}
   className="mt-4 inline-block rounded-full border border-white/20 px-5 py-2 text-sm hover:bg-white/10"
 >
   Return to the codeXverse™
