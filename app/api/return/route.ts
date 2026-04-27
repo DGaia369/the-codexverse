@@ -1,8 +1,9 @@
 import {
   classifyResponse,
-  buildNextInstruction,
   determineAction,
   determineDoor,
+  determinePathway,
+  buildNextInstruction,
 } from "@/utils/flow";
 
 import { sendReturnNotification } from "@/utils/email";
@@ -38,10 +39,20 @@ export async function POST(req: Request) {
 
     const action_type = determineAction(response_category);
 
-const door = determineDoor(response_category);
+  const door = determineDoor(response_category);
 
-    const pathway =
-      action_type === "manual_review" ? "guided-support" : "self-directed";
+  let pathway: string;
+
+if (response_category === "needs_support") {
+  pathway = "guided-support";
+} else if (response_category === "needs_clarity") {
+  pathway = "rebuild_foundation";
+} else if (response_category === "ready_for_next_step") {
+const options = ["next_step", "rise_gently", "restore_rhythm"];
+pathway = options[Math.floor(Math.random() * options.length)];
+} else {
+  pathway = "self_directed";
+}
 
     const next_instruction = buildNextInstruction({
       door,
