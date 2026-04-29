@@ -387,18 +387,54 @@ const identityOptions: Record<string, string[]> = {
 
 const identitySet =
   identityOptions[response_category] || identityOptions.general;
-  identityOptions.general;
-
+  
 let identity =
   identitySet[Math.floor(Math.random() * identitySet.length)];
 
 // INTERROGATION
-const interrogation = `
-Pause for a moment.
+const interrogationOptions: Record<string, string[]> = {
+  self_abandonment: [
+    "Where did you leave yourself in this?",
+    "What are you tolerating that you already know is not right?",
+    "If you were fully on your own side, what would change immediately?"
+  ],
+  avoidance: [
+    "What are you delaying that actually requires action?",
+    "What are you pretending needs more time?",
+    "If you acted today, what would you do first?"
+  ],
+  overwhelm: [
+    "What is actually essential here?",
+    "What can be removed immediately?",
+    "What is one thing that would reduce the pressure right now?"
+  ],
+  needs_clarity: [
+    "What do you already know but keep questioning?",
+    "If you stopped negotiating, what would you decide?",
+    "What is the simplest truth in front of you?"
+  ],
+  needs_support: [
+    "What are you trying to carry alone?",
+    "Who or what could support you if you allowed it?",
+    "What would change if you stopped isolating around this?"
+  ],
+  ready_for_next_step: [
+    "What action are you avoiding taking?",
+    "What would forward movement look like today?",
+    "What is the next step you already know?"
+  ],
+  general: [
+    "What is actually true right now?",
+    "What are you avoiding naming?",
+    "What wants your attention that you keep pushing away?"
+  ]
+};
 
-Is what you are holding onto truth…
-or is it protection, fear, or habit?
-`;
+const interrogationSet =
+  interrogationOptions[response_category] || interrogationOptions.general;
+
+const interrogation =
+  interrogationSet[Math.floor(Math.random() * interrogationSet.length)];
 
 // FINAL OUTPUT
 return `

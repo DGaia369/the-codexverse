@@ -92,14 +92,24 @@ if (result.ok && result.routing) {
   return (
     <main className="min-h-screen bg-black text-white px-6 py-16">
       <div className="mx-auto max-w-2xl">
-        <p className="mb-4 text-xs tracking-[0.3em] text-[#d7ba7d]">
-          the codeXverse™
-        </p>
+       <p className="mb-4 text-xs tracking-[0.3em] text-[#d7ba7d]">
+  the codeXverse™
+</p>
 
-        <h1 className="text-3xl font-semibold">Return</h1>
+<h1 className="text-4xl font-serif">Return</h1>
 
-        {!submitted ? (
-          <form onSubmit={handleSubmit} className="mt-8 space-y-4">
+{!submitted ? (
+  <>
+    <p className="mt-6 text-[#d7ba7d]">
+      You came back for a reason.
+    </p>
+
+    <p className="mt-4 max-w-xl text-white/70 leading-7">
+      Before you submit anything, pause. This is not about filling out a form.
+      This is about seeing clearly what is actually here.
+    </p>
+
+             <form onSubmit={handleSubmit} className="mt-8 space-y-4">
             <div>
   <label className="block text-sm mb-2 text-white/80">
     1. What did you complete?
@@ -178,22 +188,24 @@ if (result.ok && result.routing) {
   disabled={isSubmitting}
   onClick={() => console.log("button clicked")}
   className="w-full rounded-lg bg-white py-3 font-semibold text-black disabled:opacity-60"
->
-           {isSubmitting ? "Submitting..." : "Submit My Return"}
+
+>{isSubmitting ? "Submitting..." : "Lock In My Return"}
             </button>
           </form>
-        ) : (
-          <div className="mt-10 space-y-4 text-[#d7ba7d]">
-            <p className="text-lg">You came back to it.</p>
+  </>
+) : (
+   
+   <div className="mt-10 space-y-4 text-[#d7ba7d]">
+  <p className="text-lg">You came back to yourself.</p>
 
-           <p className="text-white/70 mt-4">
-  {pathway === "guided-support" && (
-    <>
-      What surfaced here matters.
-      <br />
-      Do not rush past it.
-    </>
-  )}
+  <p className="text-white/70 mt-4">
+    {pathway === "guided-support" && (
+      <>
+        What surfaced here matters.
+        <br />
+        Do not rush past it.
+      </>
+    )}       
 
   {pathway === "self-directed" && (
     <>
