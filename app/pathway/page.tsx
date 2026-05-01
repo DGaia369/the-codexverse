@@ -126,8 +126,17 @@ function formatResponse(response: string | undefined) {
   }
 }
 
-function getPathwayCTA(pathway: string | null | undefined) {
+function getPathwayCTA(pathway: string | null | undefined, door?: string | null) {
   const key = normalizePathway(pathway);
+
+ const routing = JSON.parse(localStorage.getItem("codexverse_routing") || "null");
+
+if (routing?.door === "rebuilding") {
+  return {
+    href: "/foundation",
+    label: "Rebuild the Foundation",
+  };
+}
 
   switch (key) {
     case 'return_to_self':
