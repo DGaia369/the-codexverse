@@ -9,9 +9,15 @@ type DoorPageProps = {
 export default async function DoorPage({ searchParams }: DoorPageProps) {
   const params = searchParams ? await searchParams : undefined;
 
-  const door = params?.door ?? "unknown";
-  const pathway = params?.pathway ?? "unknown";
-  const session_id = params?.session_id ?? "unknown";
+  let routing = {
+  door: params?.door ?? null,
+  pathway: params?.pathway ?? null,
+  session_id: params?.session_id ?? null,
+};
+
+const door = routing.door ?? "unknown";
+const pathway = routing.pathway ?? "unknown";
+const session_id = routing.session_id ?? "unknown";
 
   const doorContent = {
     rebuilding: {
