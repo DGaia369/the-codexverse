@@ -146,6 +146,7 @@ const status = "submitted";
         response_category,
         next_instruction,
         action_type,
+        activation_unlock_at: unlockAt.toISOString(),
       },
     });
   } catch (err) {

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { FormEvent } from "react";
 import { supabase } from "@/utils/supabase/client";
 
@@ -20,9 +20,59 @@ const [routing, setRouting] = useState<{
 
 const pathway = routing?.pathway ?? "unknown";
 
+useEffect(() => {
+  let isActive = true;
+
+  async function checkReturnLock() {
+    const params = new URLSearchParams(window.location.search);
+
+    const savedRoutingRaw = localStorage.getItem("codexverse_routing");
+    const savedRouting = savedRoutingRaw ? JSON.parse(savedRoutingRaw) : null;
+
+    const sessionId =
+      params.get("session_id") ||
+      savedRouting?.session_id ||
+      null;
+
+    if (!sessionId) return;
+
+    const { data, error } = await supabase
+      .from("returns")
+      .select("activation_unlock_at, activation_completed")
+      .eq("session_id", sessionId)
+      .maybeSingle();
+
+    if (!isActive) return;
+
+    if (error || !data) return;
+
+    if (data.activation_completed === true) return;
+
+    const unlockAt = data.activation_unlock_at;
+
+    if (!unlockAt) return;
+
+    const unlockTime = new Date(unlockAt).getTime();
+    const now = Date.now();
+
+    if (now < unlockTime) {
+      setLockMessage(
+        "Your return is not open yet. Go live the commitment first."
+      );
+    }
+  }
+
+  checkReturnLock();
+
+  return () => {
+    isActive = false;
+  };
+}, []);
+
 const [submitted, setSubmitted] = useState(false);
 const [isSubmitting, setIsSubmitting] = useState(false);
 const [errorMessage, setErrorMessage] = useState("");
+const [lockMessage, setLockMessage] = useState("");
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
   e.preventDefault();
@@ -60,11 +110,12 @@ if (!emailIsValid) {
     const result = await res.json();
 
 if (result.ok && result.routing) {
-  const cleanRouting = {
-    door: result.routing.door || "unknown",
-    pathway: result.routing.pathway || "unknown",
-    session_id: result.routing.session_id || "unknown",
-  };
+ const cleanRouting = {
+  door: result.routing.door || "unknown",
+  pathway: result.routing.pathway || "unknown",
+  session_id: result.routing.session_id || "unknown",
+  activation_unlock_at: result.routing.activation_unlock_at || null,
+};
 
   setRouting(cleanRouting);
   localStorage.setItem("codexverse_routing", JSON.stringify(cleanRouting));
@@ -89,6 +140,37 @@ if (result.ok && result.routing) {
   }
 };
 
+if (lockMessage) {
+  return (
+    <main className="min-h-screen bg-black text-white px-6 py-16 flex items-center">
+      <div className="mx-auto max-w-2xl">
+        <p className="mb-4 text-xs tracking-[0.3em] text-[#d7ba7d]">
+          the codeXverse™
+        </p>
+
+        <h1 className="text-4xl font-serif">
+          Not yet.
+        </h1>
+
+        <p className="mt-6 text-lg leading-8 text-white/75">
+          {lockMessage}
+        </p>
+
+        <p className="mt-6 text-white/60">
+          The system is not punishing you. It is protecting the work from becoming another thought you abandoned.
+        </p>
+
+        <a
+          href="/"
+          className="mt-8 inline-block rounded-full border border-white/20 px-5 py-2 text-sm hover:bg-white/10"
+        >
+          Return to the Threshold
+        </a>
+      </div>
+    </main>
+  );
+}
+
   return (
     <main className="min-h-screen bg-black text-white px-6 py-16">
       <div className="mx-auto max-w-2xl">
@@ -101,13 +183,13 @@ if (result.ok && result.routing) {
 {!submitted ? (
   <>
     <p className="mt-6 text-[#d7ba7d]">
-      You came back for a reason.
-    </p>
+  Before you answer, tell the truth.
+</p>
 
-    <p className="mt-4 max-w-xl text-white/70 leading-7">
-      Before you submit anything, pause. This is not about filling out a form.
-      This is about seeing clearly what is actually here.
-    </p>
+<p className="mt-4 max-w-xl text-white/70 leading-7">
+  This is the first mirror. Not a performance. Not a progress report.
+  Name what happened, what resisted, what shifted, and what you are no longer willing to carry forward.
+</p>
 
              <form onSubmit={handleSubmit} className="mt-8 space-y-4">
             <div>
