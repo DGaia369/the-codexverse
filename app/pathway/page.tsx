@@ -6,6 +6,8 @@ import { useSearchParams } from 'next/navigation';
 import { createClient } from '@supabase/supabase-js';
 
 type ReturnRow = {
+  activation_unlock_at?: string | null;
+  activation_completed?: boolean | null;
   session_id: string | null;
   door: string | null;
   pathway: string | null;
@@ -241,9 +243,25 @@ if (fetchError) {
 const row: ReturnRow | null = rows && rows.length > 0 ? rows[0] : null;
 
 if (!row) {
-  setError('No pathway record was found for this session.');
+  setError("No pathway record was found for this session.");
   setLoading(false);
   return;
+}
+
+const unlockAt = row.activation_unlock_at;
+const isCompleted = row.activation_completed === true;
+
+if (unlockAt && !isCompleted) {
+  const unlockTime = new Date(unlockAt).getTime();
+  const now = Date.now();
+
+  if (now < unlockTime) {
+    setError(
+      "This pathway is locked for now. Go live the commitment first."
+    );
+    setLoading(false);
+    return;
+  }
 }
 
 setData(row);
