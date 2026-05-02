@@ -95,6 +95,11 @@ const status = "submitted";
         session_id,
         response_category,
         next_instruction,
+
+  activation_committed: true,
+  activation_committed_at: now.toISOString(),
+  activation_unlock_at: unlockAt.toISOString(),
+  activation_completed: false,
       },
     ]);
 
