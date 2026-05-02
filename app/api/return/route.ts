@@ -60,7 +60,10 @@ pathway = options[Math.floor(Math.random() * options.length)];
       response_category,
     });
 
-    const status = "submitted";
+    const now = new Date();
+const unlockAt = new Date(now.getTime() + 24 * 60 * 60 * 1000); // +24 hours
+
+const status = "submitted";
 
     console.log("Computed ACT values:", {
       response_category,
