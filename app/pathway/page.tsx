@@ -131,9 +131,35 @@ function formatResponse(response: string | undefined) {
 function getPathwayCTA(pathway: string | null | undefined, door?: string | null) {
   const key = normalizePathway(pathway);
 
- const routing = JSON.parse(localStorage.getItem("codexverse_routing") || "null");
+ function getPathwayCTA(door: string) {
+  if (door === "rebuilding") {
+    return {
+      label: "Continue Rebuilding",
+      href: "/foundation",
+    };
+  }
 
-if (routing?.door === "rebuilding") {
+  if (door === "stuck") {
+    return {
+      label: "Continue with Guidance",
+      href: "/guided",
+    };
+  }
+
+  if (door === "lost") {
+    return {
+      label: "Find Your Ground",
+      href: "/next-step",
+    };
+  }
+
+  return {
+    label: "Choose Your Path",
+    href: "/door",
+  };
+}
+
+if (door === "rebuilding") {
   return {
     href: "/foundation",
     label: "Rebuild the Foundation",
@@ -207,7 +233,7 @@ function PathwayContent() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const cta = useMemo(() => getPathwayCTA(data?.pathway), [data?.pathway]);
+ const cta = useMemo(() => getPathwayCTA(data?.door), [data?.door]);
 
  useEffect(() => {
   let isActive = true;
@@ -292,7 +318,13 @@ and take one step you will actually complete.`;
       <div className="mx-auto flex min-h-screen max-w-3xl flex-col px-6 py-10 sm:px-8 sm:py-12">
         <div className="mb-10">
           <Link
-            href={sessionId ? `/door?session_id=${encodeURIComponent(sessionId)}` : '/door'}
+          href={
+  sessionId
+    ? `/door?door=${encodeURIComponent(data?.door ?? "")}&pathway=${encodeURIComponent(
+        data?.pathway ?? ""
+      )}&session_id=${encodeURIComponent(sessionId)}`
+    : "/door"
+}
             className="inline-flex items-center text-sm tracking-[0.08em] text-[#6d624f] transition hover:text-[#2a2a2a]"
           >
             ← Back to Door
