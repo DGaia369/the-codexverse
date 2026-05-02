@@ -80,6 +80,15 @@ const status = "submitted";
       process.env.SUPABASE_SERVICE_ROLE_KEY!
     );
 
+    console.log("TESTING COLUMN ACCESS");
+
+const columnTest = await supabase
+  .from("returns")
+  .select("activation_committed")
+  .limit(1);
+
+console.log("COLUMN TEST RESULT:", columnTest);
+
     const { data, error } = await supabase.from("returns").insert([
       {
         q1_completed: q1Completed,
