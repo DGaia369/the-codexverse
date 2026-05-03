@@ -318,10 +318,11 @@ and take one step you will actually complete.`;
       <div className="mx-auto flex min-h-screen max-w-3xl flex-col px-6 py-10 sm:px-8 sm:py-12">
         <div className="mb-10">
           <Link
-          href={
+          
+    href={
   sessionId
-    ? `/door?door=${encodeURIComponent(data?.door ?? "")}&pathway=${encodeURIComponent(
-        data?.pathway ?? ""
+    ? `/door?door=${encodeURIComponent(data?.door ?? doorLabel ?? "")}&pathway=${encodeURIComponent(
+        data?.pathway ?? pathwayLabel ?? ""
       )}&session_id=${encodeURIComponent(sessionId)}`
     : "/door"
 }
