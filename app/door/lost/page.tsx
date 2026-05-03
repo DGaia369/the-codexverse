@@ -1,16 +1,27 @@
-"use client";
+type LostPageProps = {
+  searchParams?: Promise<{
+    door?: string;
+    pathway?: string;
+    session_id?: string;
+  }>;
+};
 
-import { useEffect } from "react";
+export default async function Lost({ searchParams }: LostPageProps) {
+  const params = searchParams ? await searchParams : undefined;
 
-export default function Lost() {
-  useEffect(() => {
-    console.log("Door viewed: lost");
-  }, []);
+  const door = params?.door ?? "";
+  const pathway = params?.pathway ?? "";
+  const sessionId = params?.session_id ?? "";
+
+  const pathwayHref = sessionId
+    ? `/pathway/return-to-self?door=${encodeURIComponent(door)}&pathway=${encodeURIComponent(
+        pathway
+      )}&session_id=${encodeURIComponent(sessionId)}`
+    : "/pathway/return-to-self";
 
   return (
     <main className="min-h-screen bg-[#0a0a0f] text-white flex items-center">
       <div className="mx-auto max-w-2xl px-6">
-
         <p className="text-xs tracking-[0.3em] text-[#d7ba7d] mb-4">
           the codeXverse™
         </p>
@@ -22,17 +33,17 @@ export default function Lost() {
         </h1>
 
         <p className="mt-6 text-white/70 leading-8">
-          This isn’t about finding who you were.  
+          This isn’t about finding who you were.
+          <br />
           It’s about proving you can come back.
         </p>
 
         <a
-          href="/pathway/return-to-self"
+          href={pathwayHref}
           className="inline-block mt-10 rounded-full bg-white text-black px-6 py-3 font-semibold hover:opacity-90"
         >
           Enter Pathway One
         </a>
-
       </div>
     </main>
   );

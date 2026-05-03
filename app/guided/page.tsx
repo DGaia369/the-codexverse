@@ -6,6 +6,8 @@ import { useSearchParams } from 'next/navigation';
 
 function GuidedContent() {
   const searchParams = useSearchParams();
+  const door = searchParams.get('door');
+  const pathway = searchParams.get('pathway');
   const sessionId = searchParams.get('session_id');
 
   return (
@@ -60,7 +62,11 @@ function GuidedContent() {
 
         <div>
           <Link
-            href={sessionId ? `/pathway?session_id=${encodeURIComponent(sessionId)}` : '/pathway'}
+            href={
+  sessionId
+    ? `/pathway?door=${encodeURIComponent(door ?? "")}&pathway=${encodeURIComponent(pathway ?? "")}&session_id=${encodeURIComponent(sessionId)}`
+    : '/pathway'
+}
             className="inline-flex min-h-[48px] items-center rounded-full border border-white/20 px-6 py-3 text-sm text-white transition hover:bg-white/10"
           >
             Recalibrate
