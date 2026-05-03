@@ -1,3 +1,52 @@
-export default function InconsistentDoorPage() {
-  return null;
+type InconsistentPageProps = {
+  searchParams?: Promise<{
+    door?: string;
+    pathway?: string;
+    session_id?: string;
+  }>;
+};
+
+export default async function InconsistentDoorPage({
+  searchParams,
+}: InconsistentPageProps) {
+  const params = searchParams ? await searchParams : undefined;
+
+  const door = params?.door ?? "";
+  const pathway = params?.pathway ?? "";
+  const sessionId = params?.session_id ?? "";
+
+  const href = sessionId
+    ? `/next-step?door=${encodeURIComponent(door)}&pathway=${encodeURIComponent(
+        pathway
+      )}&session_id=${encodeURIComponent(sessionId)}`
+    : "/next-step";
+
+  return (
+    <main className="min-h-screen bg-black text-white flex items-center">
+      <div className="mx-auto max-w-2xl px-6">
+        <p className="text-xs tracking-[0.3em] text-[#d7ba7d] mb-4">
+          the codeXverse™
+        </p>
+
+        <h1 className="text-3xl md:text-5xl font-semibold leading-tight">
+          You do not need perfection.
+          <br />
+          You need proof.
+        </h1>
+
+        <p className="mt-6 text-white/70 leading-8">
+          Consistency is not a personality trait.
+          <br />
+          It is evidence repeated until self-trust returns.
+        </p>
+
+        <a
+          href={href}
+          className="inline-block mt-10 rounded-full bg-white text-black px-6 py-3 font-semibold hover:opacity-90"
+        >
+          Take the Next Step
+        </a>
+      </div>
+    </main>
+  );
 }
