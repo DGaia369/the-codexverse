@@ -1,4 +1,24 @@
-export default function FoundationPage() {
+type FoundationPageProps = {
+  searchParams?: Promise<{
+    door?: string;
+    pathway?: string;
+    session_id?: string;
+  }>;
+};
+
+export default async function FoundationPage({ searchParams }: FoundationPageProps) {
+  const params = searchParams ? await searchParams : undefined;
+
+  const door = params?.door ?? "";
+  const pathway = params?.pathway ?? "";
+  const sessionId = params?.session_id ?? "";
+
+  const returnHref = sessionId
+    ? `/return?door=${encodeURIComponent(door)}&pathway=${encodeURIComponent(
+        pathway
+      )}&session_id=${encodeURIComponent(sessionId)}`
+    : "/return";
+
   return (
     <main className="min-h-screen bg-black text-white px-6 py-16">
       <div className="mx-auto max-w-2xl">
@@ -16,13 +36,12 @@ export default function FoundationPage() {
 
         <p className="mt-8 text-lg leading-8 text-white/75">
           Clarity is not enough if the ground beneath it is unstable.
-          This is where you stop rushing forward and choose what can actually support the next version of you.
+          This is where you stop rushing forward and choose what can actually
+          support the next version of you.
         </p>
 
         <div className="mt-12 rounded-3xl border border-white/10 bg-white/5 p-8">
-          <p className="text-[#d7ba7d] text-lg">
-            Your foundation check:
-          </p>
+          <p className="text-[#d7ba7d] text-lg">Your foundation check:</p>
 
           <div className="mt-6 space-y-5 leading-8 text-white/80">
             <p>What is one thing you keep trying to build on that no longer supports you?</p>
@@ -43,7 +62,7 @@ export default function FoundationPage() {
         </div>
 
         <a
-          href="/return"
+          href={returnHref}
           className="mt-10 inline-block rounded-full border border-white/20 px-6 py-3 text-sm hover:bg-white/10"
         >
           Return again
