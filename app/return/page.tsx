@@ -187,8 +187,14 @@ if (lockMessage) {
 </p>
 
 <p className="mt-4 max-w-xl text-white/70 leading-7">
-  This is the first mirror. Not a performance. Not a progress report.
-  Name what happened, what resisted, what shifted, and what you are no longer willing to carry forward.
+  This is not for appearance.
+
+Answer honestly.
+
+What happened?
+What resisted?
+What changed?
+What are you done carrying?
 </p>
 
              <form onSubmit={handleSubmit} className="mt-8 space-y-4">
@@ -307,9 +313,9 @@ if (lockMessage) {
 </p>
 
             <p className="text-sm text-white/60">
-              Stay with the commitment you made for the next 24 hours.
-              <br />
-              Do not negotiate with it.
+              Stay with what you chose.
+
+Even when the feeling changes.
             </p>
 
             <a

@@ -74,7 +74,7 @@ function toTitleCase(value: string) {
 }
 
 function humanize(value: string | null | undefined, map?: Record<string, string>) {
-  if (!value) return '—';
+  if (!value) return '';
   const key = value.trim().toLowerCase();
   return map?.[key] ?? toTitleCase(key);
 }
@@ -115,61 +115,20 @@ function formatResponseLabel(label: string) {
   }
 }
 
-function formatResponse(response: string | undefined) {
-  switch (response) {
-    case 'general':
-      return 'something is unclear, but present';
-    case 'needs_clarity':
-      return 'you need clarity, not more information';
-    case 'resistance':
-      return 'you are noticing resistance';
-    default:
-      return response;
-  }
-}
-
 function getPathwayCTA(pathway: string | null | undefined, door?: string | null) {
   const key = normalizePathway(pathway);
 
- function getPathwayCTA(door: string) {
-  if (door === "rebuilding") {
+  if (door === 'rebuilding') {
     return {
-      label: "Continue Rebuilding",
-      href: "/foundation",
+      href: '/foundation',
+      label: 'Rebuild the Foundation',
     };
   }
-
-  if (door === "stuck") {
-    return {
-      label: "Continue with Guidance",
-      href: "/guided",
-    };
-  }
-
-  if (door === "lost") {
-    return {
-      label: "Find Your Ground",
-      href: "/next-step",
-    };
-  }
-
-  return {
-    label: "Choose Your Path",
-    href: "/door",
-  };
-}
-
-if (door === "rebuilding") {
-  return {
-    href: "/foundation",
-    label: "Rebuild the Foundation",
-  };
-}
 
   switch (key) {
     case 'return_to_self':
       return {
-        href: '/return',
+        href: '/pathway/return-to-self',
         label: 'Begin Your Return',
       };
     case 'rebuild_foundation':
@@ -202,21 +161,14 @@ if (door === "rebuilding") {
         href: '/next-step',
         label: 'Take the Next Step',
       };
-
-    case 'guided-support':
     case 'guided_support':
+    case 'guided_support:':
+    case 'self_directed':
+    case 'self_directed:':
       return {
         href: '/guided',
         label: 'Continue with Guidance',
       };
-
-    case 'self-directed':
-    case 'self_directed':
-      return {
-    href: '/guided',
-    label: 'Continue with Guidance',
-  };  
-
     default:
       return {
         href: '/door',
@@ -227,106 +179,129 @@ if (door === "rebuilding") {
 
 function PathwayContent() {
   const searchParams = useSearchParams();
+
   const sessionId = searchParams.get('session_id');
+  const urlDoor = searchParams.get('door');
+  const urlPathway = searchParams.get('pathway');
 
   const [data, setData] = useState<ReturnRow | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
- const cta = useMemo(() => getPathwayCTA(data?.door), [data?.door]);
+  const cta = useMemo(() => getPathwayCTA(data?.pathway, data?.door), [data?.pathway, data?.door]);
 
- useEffect(() => {
-  let isActive = true;
+  useEffect(() => {
+    let isActive = true;
 
-  async function loadPathway() {
-    if (!sessionId) {
+    async function loadPathway() {
+      if (!sessionId) {
+        if (!isActive) return;
+        setError('This page cannot open without a valid session. Return to the beginning and enter through the codeXverse™ properly.');
+        setLoading(false);
+        return;
+      }
+
+      setLoading(true);
+      setError(null);
+
+      const { data: rows, error: fetchError } = await supabase
+        .from('returns')
+        .select('*')
+        .eq('session_id', sessionId);
+
       if (!isActive) return;
-      setError('Missing session_id in the URL.');
+
+      if (fetchError) {
+        setError(fetchError.message || 'Unable to load your pathway.');
+        setLoading(false);
+        return;
+      }
+
+      const row: ReturnRow | null = rows && rows.length > 0 ? rows[0] : null;
+
+      if (!row) {
+        setError('This session does not exist. Return to the beginning and re-enter the codeXverse™.');
+        setLoading(false);
+        return;
+      }
+
+      if (!row.door || !row.pathway || !row.session_id) {
+        setError('This session is missing required pathway data. Return to the Door and choose again.');
+        setLoading(false);
+        return;
+      }
+
+      if (row.session_id !== sessionId) {
+        setError('Session validation failed. Return to the beginning and re-enter the codeXverse™.');
+        setLoading(false);
+        return;
+      }
+
+      if (urlDoor && row.door !== urlDoor) {
+  setError("Pathway access mismatch. Redirecting...");
+  setLoading(false);
+  return;
+}
+
+if (urlPathway && row.pathway !== urlPathway) {
+  setError("Pathway access mismatch. Redirecting...");
+  setLoading(false);
+  return;
+}
+
+      const unlockAt = row.activation_unlock_at;
+      const isCompleted = row.activation_completed === true;
+
+      if (unlockAt && !isCompleted) {
+        const unlockTime = new Date(unlockAt).getTime();
+        const now = Date.now();
+
+        if (!Number.isNaN(unlockTime) && now < unlockTime) {
+          setError('This pathway is locked for now. Go live the commitment first, then return when the lock has lifted.');
+          setLoading(false);
+          return;
+        }
+      }
+
+      setData(row);
       setLoading(false);
-      return;
     }
 
-    setLoading(true);
-    setError(null);
+    loadPathway();
 
-  const { data: rows, error: fetchError } = await supabase
-  .from('returns')
-  .select('*')
-  .eq('session_id', sessionId);
-
-console.log('PATHWAY sessionId:', sessionId);
-console.log('PATHWAY rows raw:', rows);
-console.log('PATHWAY fetchError:', fetchError);
-
-if (!isActive) return;
-
-if (fetchError) {
-  setError(fetchError.message || 'Unable to load your pathway.');
-  setLoading(false);
-  return;
-}
-
-const row: ReturnRow | null = rows && rows.length > 0 ? rows[0] : null;
-
-if (!row) {
-  setError("No pathway record was found for this session.");
-  setLoading(false);
-  return;
-}
-
-const unlockAt = row.activation_unlock_at;
-const isCompleted = row.activation_completed === true;
-
-if (unlockAt && !isCompleted) {
-  const unlockTime = new Date(unlockAt).getTime();
-  const now = Date.now();
-
-  if (now < unlockTime) {
-    setError(
-      "This pathway is locked for now. Go live the commitment first."
-    );
-    setLoading(false);
-    return;
-  }
-}
-
-setData(row);
-setLoading(false);
-  }
-
-  loadPathway();
-
-  return () => {
-    isActive = false;
-  };
-}, [sessionId]);
+    return () => {
+      isActive = false;
+    };
+  }, [sessionId, urlDoor, urlPathway]);
 
   const doorLabel = humanize(data?.door, DOOR_LABELS);
   const pathwayLabel = humanize(data?.pathway, PATHWAY_LABELS);
   const responseLabel = humanize(data?.response_category, RESPONSE_LABELS);
   const nextInstruction =
-  data?.next_instruction?.trim() ||
-  `You don’t need more information.
+    data?.next_instruction?.trim() ||
+    `You don't need more information.
 
 Something is already clear.
 
 Decide what matters now,
 and take one step you will actually complete.`;
 
+  const doorReturnHref =
+    sessionId && data?.door && data?.pathway
+      ? `/door?door=${encodeURIComponent(data.door)}&pathway=${encodeURIComponent(data.pathway)}&session_id=${encodeURIComponent(sessionId)}`
+      : '/door';
+
+  const nextHref = sessionId
+    ? `${cta.href}?session_id=${encodeURIComponent(sessionId)}`
+    : cta.href;
+
   return (
     <main className="min-h-screen bg-black text-white">
       <div className="mx-auto flex min-h-screen max-w-3xl flex-col px-6 py-10 sm:px-8 sm:py-12">
         <div className="mb-10">
           <Link
-          
-    href={
-  sessionId
-    ? `/door?door=${encodeURIComponent(data?.door ?? doorLabel ?? "")}&pathway=${encodeURIComponent(
-        data?.pathway ?? pathwayLabel ?? ""
-      )}&session_id=${encodeURIComponent(sessionId)}`
-    : "/door"
-}
-            className="inline-flex items-center text-sm tracking-[0.08em] text-[#6d624f] transition hover:text-[#2a2a2a]"
+            href={doorReturnHref}
+            className="inline-flex items-center text-sm tracking-[0.08em] text-[#d6b24f] transition hover:text-[#2a2a2a]"
           >
             ← Back to Door
           </Link>
@@ -345,97 +320,87 @@ and take one step you will actually complete.`;
                 <div className="h-4 w-11/12 animate-pulse rounded-full bg-[#eee6d9]" />
                 <div className="h-4 w-4/5 animate-pulse rounded-full bg-[#eee6d9]" />
               </div>
-
-              <div className="h-12 w-52 animate-pulse rounded-full bg-[#d9c9b0]" />
             </section>
           ) : error ? (
-            <section className="space-y-12">
-              <p className="text-xs uppercase tracking-[0.22em] text-[#8a7a63]">
-                Pathway
+            <section className="space-y-8">
+              <p className="text-sm uppercase tracking-[0.22em] text-[#d6b24f]">
+                Access blocked
               </p>
 
               <div className="space-y-5">
-                <h1 className="font-serif text-4xl leading-tight sm:text-5xl">
-                  We couldn’t open this pathway.
+                <h1 className="max-w-2xl text-4xl font-semibold leading-tight tracking-[-0.04em] text-white sm:text-5xl">
+                  This pathway cannot be entered from here.
                 </h1>
-                <p className="max-w-xl text-base leading-8 text-white/70">
+
+                <p className="max-w-xl text-[1.08rem] leading-9 text-white/80">
                   {error}
                 </p>
               </div>
 
-              <div>
-                <Link
-                  href="/door"
-                  className="inline-flex min-h-[48px] items-center rounded-full bg-[#b2955b] px-6 py-3 text-sm font-medium text-white transition hover:opacity-90"
-                >
-                  Continue with Guidance
-                </Link>
-              </div>
+              <Link
+                href="/return"
+                className="inline-flex min-h-[52px] items-center rounded-full bg-[#b2955b] px-7 py-3 text-sm font-medium tracking-[0.04em] text-white transition hover:opacity-90"
+              >
+                Return to the beginning
+              </Link>
             </section>
           ) : (
-            <section className="space-y-14">
-              <div className="space-y-4">
-                <p className="mb-8 text-xs uppercase tracking-[0.22em] text-[#d7ba7d]">
-  the codeXverse™
-</p>
-                <p className="text-xs uppercase tracking-[0.22em] text-[#8a7a63]">
-                  Your Pathway
+            <section className="space-y-10">
+              <div className="space-y-3">
+                <p className="text-sm uppercase tracking-[0.22em] text-[#d6b24f]">
+                  Your pathway
                 </p>
 
-                <h1 className="max-w-2xl font-serif text-4xl leading-[1.1] sm:text-5xl md:text-6xl">
+                <h1 className="max-w-2xl text-4xl font-semibold leading-tight tracking-[-0.04em] text-white sm:text-5xl">
                   {pathwayLabel}
                 </h1>
+              </div>
 
-                <p className="max-w-xl text-lg leading-8 text-white/70">
-                  This is not a dashboard. It is a direction. A gentle naming of where
-                  you are, and what comes next.
+              <div className="space-y-6">
+                <p className="max-w-xl text-[1.08rem] leading-9 text-white/85">
+                  You named where you are:{' '}
+                  <span className="font-medium text-[#d7ba7d]">
+                    {formatDoorLabel(doorLabel)}
+                  </span>
+                  .
+                </p>
+
+                <p className="max-w-xl text-[1.08rem] leading-9 text-white/85">
+                  <span className="font-medium text-[#d7ba7d]">
+                    What surfaced:
+                  </span>{' '}
+                  {formatResponseLabel(responseLabel)}
                 </p>
               </div>
 
-             <div className="space-y-8">
-  <div className="max-w-xl space-y-6">
-    <p className="text-[1.05rem] leading-8 text-white/85">
-      <span className="font-medium text-[#d7ba7d]">
-        You named where you are:
-      </span>{' '}
-      {formatDoorLabel(doorLabel)}
-    </p>
+              <div className="max-w-xl space-y-5">
+                <p className="text-sm uppercase tracking-[0.18em] text-white/45">
+                  Your next instruction
+                </p>
 
-    <p className="text-[1.05rem] leading-8 text-white/85">
-      <span className="font-medium text-[#d7ba7d]">
-        What surfaced:
-      </span>{' '}
-      {formatResponseLabel(responseLabel)}
-    </p>
-  </div>
-
-                <div className="max-w-xl space-y-5">
-                  <p className="text-sm uppercase tracking-[0.18em] text-white/45">
-                    Your next instruction
-                  </p>
-
-                  <div className="space-y-5">
-                    {nextInstruction.split('\n').filter(Boolean).map((paragraph, index) => (
+                <div className="space-y-5">
+                  {nextInstruction
+                    .split('\n')
+                    .filter(Boolean)
+                    .map((paragraph, index) => (
                       <p
                         key={index}
-                       className="max-w-xl text-[1.08rem] leading-9 text-white/85"
+                        className="max-w-xl text-[1.08rem] leading-9 text-white/85"
                       >
                         {paragraph}
                       </p>
                     ))}
-                  </div>
                 </div>
               </div>
 
               <div className="pt-6">
                 <Link
-                  href={sessionId ? `${cta.href}?session_id=${encodeURIComponent(sessionId)}` : cta.href}
+                  href={nextHref}
                   className="inline-flex min-h-[52px] items-center rounded-full bg-[#b2955b] px-7 py-3 text-sm font-medium tracking-[0.04em] text-white transition hover:opacity-90"
                 >
                   {cta.label}
                 </Link>
               </div>
-              
             </section>
           )}
         </div>
