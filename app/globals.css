@@ -24,3 +24,18 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* CodeXverse™ threshold descent — scroll snap */
+html {
+  scroll-behavior: smooth;
+}
+
+.threshold-descent {
+  scroll-snap-type: y proximity;
+  scroll-behavior: smooth;
+}
+
+.threshold-layer {
+  scroll-snap-align: start;
+  scroll-snap-stop: normal;
+}

@@ -21,7 +21,7 @@ function AccessBlocked({ message }: { message: string }) {
     <main className="min-h-screen bg-black text-white px-6 py-16">
       <div className="mx-auto max-w-2xl">
         <p className="mb-10 text-xs tracking-[0.3em] text-[#d7ba7d]">
-          the codeXverse™
+          the CodeXverse™
         </p>
 
         <p className="text-xs uppercase tracking-[0.22em] text-[#8a7a63]">
@@ -77,7 +77,7 @@ export default async function FoundationPage({ searchParams }: FoundationPagePro
 
   if (!row) {
     return (
-      <AccessBlocked message="This session does not exist. Return to the beginning and re-enter the codeXverse™." />
+      <AccessBlocked message="This session does not exist. Return to the beginning and re-enter the CodeXverse™." />
     );
   }
 
@@ -126,7 +126,7 @@ export default async function FoundationPage({ searchParams }: FoundationPagePro
     <main className="min-h-screen bg-black text-white px-6 py-16">
       <div className="mx-auto max-w-2xl">
         <p className="mb-10 text-xs tracking-[0.3em] text-[#d7ba7d]">
-          the codeXverse™
+          the CodeXverse™
         </p>
 
         <p className="text-xs uppercase tracking-[0.22em] text-[#8a7a63]">

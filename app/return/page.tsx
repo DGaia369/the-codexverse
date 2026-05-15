@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import type { FormEvent } from "react";
+
 import { supabase } from "@/utils/supabase/client";
 
 export default function ReturnPage() {
@@ -77,17 +77,18 @@ const [lockMessage, setLockMessage] = useState("");
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
   e.preventDefault();
 
+  // Validate before locking the button
   const emailIsValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
+  if (!emailIsValid) {
+    setErrorMessage("Please enter a valid email address.");
+    return;
+  }
 
-if (!emailIsValid) {
-  setErrorMessage("Please enter a valid email address.");
-  setIsSubmitting(false);
-  return;
-}
-  console.log("handleSubmit fired");
-  console.log("Submitting return form");
+  // Email is valid — now lock the button and clear errors
   setIsSubmitting(true);
   setErrorMessage("");
+  console.log("handleSubmit fired");
+  console.log("Submitting return form");
 
   try {
     console.log("before fetch");

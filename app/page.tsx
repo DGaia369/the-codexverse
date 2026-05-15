@@ -1,3 +1,7 @@
+'use client';
+
+import ThresholdAtmosphere from '@/components/threshold/ThresholdAtmosphere';
+
 export default function Home() {
   const loopSteps = [
     {
@@ -40,78 +44,365 @@ export default function Home() {
 
   return (
     <main className="min-h-screen bg-[#0a0a0f] text-white">
-      <section className="relative overflow-hidden">
-        <div
-          className="absolute inset-0 bg-cover bg-center"
-          style={{
-            backgroundImage:
-              "url('https://images.unsplash.com/photo-1497366754035-f200968a6e72?auto=format&fit=crop&w=1800&q=80')",
-          }}
-        />
-        <div className="absolute inset-0 bg-black/70" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(178,149,91,0.20),transparent_42%)]" />
+      <section className="relative overflow-hidden bg-[#0a0a0f]">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(178,149,91,0.16),transparent_42%)]" />
+        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(10,10,15,0.86)_0%,rgba(10,10,15,1)_92%)]" />
 
+        {/* Header — brand label only. No Begin button. The atmosphere is the beginning. */}
         <header className="relative z-10 border-b border-white/10">
-          <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-5 md:px-10">
+          <div className="mx-auto flex max-w-7xl items-center px-6 py-5 md:px-10">
             <div>
               <p className="text-sm tracking-[0.25em] text-[#d7ba7d]">
                 the codeXverse™
               </p>
               <p className="text-xs text-white/55">
-                Participatory transformation through action and return
+                Return to Self
               </p>
             </div>
-
-            <a
-              href="#pathway-one"
-              className="rounded-full border border-white/20 bg-white/10 px-5 py-2.5 text-sm font-medium text-white transition hover:bg-white/15"
-            >
-              Enter Pathway One
-            </a>
           </div>
         </header>
 
-        <div className="relative z-10 mx-auto flex min-h-[88vh] max-w-7xl items-center px-6 py-20 md:px-10">
-          <div className="max-w-4xl">
-            <p className="mb-5 text-xs uppercase tracking-[0.35em] text-[#d7ba7d]">
-              Human vision. AI leverage. Accelerated reality.
-            </p>
+        <div className="relative z-10 threshold-descent">
 
-            <h1 className="max-w-4xl text-4xl font-semibold leading-tight md:text-6xl">
-              This is not something you consume.
-              <br />
-              It is something you participate in.
-            </h1>
+         {/* Atmosphere — before words, before ask. The descent begins here. */}
+          <div className="threshold-layer">
+            <ThresholdAtmosphere />
+          </div>
 
-            <p className="mt-6 max-w-3xl text-lg leading-8 text-white/78 md:text-xl">
-              the codeXverse™ is a living identity reconstruction environment
-              where truth meets action, action meets return, and return becomes
-              evidence. Here, transformation is not performed. It is lived.
-            </p>
+          {/* Layer 1 — Interruption */}
+          <div
+            id="layer-1"
+            className="threshold-layer flex min-h-screen flex-col items-center justify-center px-6 py-24 md:px-10">
+            <div className="w-full max-w-3xl">
+              <p className="mb-8 text-xs uppercase tracking-[0.35em] text-[#d7ba7d]">
+                Layer 1 · Interruption
+              </p>
 
-            <div className="mt-10 flex flex-col gap-4 sm:flex-row">
+              <div className="space-y-6 text-base leading-8 text-white/84 md:text-xl md:leading-[1.65]">
+                <p>
+                  There comes a point where you become so good at carrying
+                  everything that nobody realizes how heavy it's gotten.
+                </p>
+
+                <p className="text-white/72">
+                  You answer the messages. Go to work. Handle what needs
+                  handling.
+                </p>
+
+                <p>You keep moving.</p>
+
+                <p className="text-white/72">
+                  Meanwhile, something quieter starts happening underneath all
+                  of it.
+                </p>
+
+                <p>You stop checking in with yourself.</p>
+
+                <p className="text-white/72">
+                  Not because you wanted to.
+                </p>
+
+                <p>
+                  Because survival became faster than reflection.
+                </p>
+
+                <p className="text-white/72">
+                  Most people do not notice the moment they disappear into
+                  routine.
+                </p>
+
+                <p className="text-white/72">
+                  They only notice the exhaustion later.
+                </p>
+
+                <p>
+                  And by then, the pattern feels normal.
+                </p>
+              </div>
+
               <a
-                href="#pathway-one"
-                className="inline-flex min-w-[220px] items-center justify-center rounded-full bg-white px-6 py-3 text-sm font-semibold text-black transition hover:bg-white/85"
+                href="#mirror"
+                className="mt-12 inline-flex rounded-full border border-[#d7ba7d]/35 bg-[#d7ba7d]/10 px-6 py-3 text-sm font-medium text-[#f3dfaa] transition hover:border-[#d7ba7d]/80 hover:bg-[#d7ba7d]/18"
               >
-                Start Return to Self
-              </a>
-              <a
-                href="#what-this-is"
-                className="inline-flex min-w-[220px] items-center justify-center rounded-full border border-white/25 px-6 py-3 text-sm font-semibold text-white transition hover:bg-white/10"
-              >
-                What this is
+                Continue to Mirror →
               </a>
             </div>
-
-            <p className="mt-6 text-sm leading-7 text-white/58">
-              Not entertainment. Not passive education. Not empty inspiration.
-              This is participatory transformation structured through pathways,
-              not levels.
-            </p>
           </div>
+
+{/* Layer 2 — Mirror */}
+<div
+  id="mirror"
+  className="flex min-h-screen flex-col items-center justify-center px-6 py-20 md:px-10">
+  <div className="w-full max-w-3xl">
+    <p className="mb-8 text-xs uppercase tracking-[0.35em] text-[#d7ba7d]">
+      Layer 2 · Mirror
+    </p>
+
+    <div className="space-y-6 text-base leading-8 text-white/84 md:text-xl md:leading-[1.65]">
+      <p>You tell yourself you'll slow down eventually.</p>
+
+      <p className="text-white/72">
+        After things calm down. After the pressure eases. After you
+        figure everything out.
+      </p>
+
+      <p>But eventually keeps moving.</p>
+
+      <p className="text-white/72">
+        So you adapt.
+      </p>
+
+      <p>
+        You become dependable. Productive. Available. Functional.
+      </p>
+
+      <p className="text-white/72">
+        Even when you feel disconnected from your own life.
+      </p>
+
+      <p>
+        Most people around you will call that strength.
+      </p>
+
+      <p className="text-white/72">
+        Even while something inside you quietly keeps asking:
+      </p>
+
+      <p>
+        "When do I come back to me?"
+      </p>
+
+      <p className="text-white/72">
+        …or maybe even more honestly:
+      </p>
+
+      <p>
+        "When do I get to see me?"
+      </p>
+    </div>
+
+    
+    <a
+    href="#reframe"
+      className="mt-12 inline-flex rounded-full border border-[#d7ba7d]/35 bg-[#d7ba7d]/10 px-6 py-3 text-sm font-medium text-[#f3dfaa] transition hover:border-[#d7ba7d]/80 hover:bg-[#d7ba7d]/18"
+    >
+      Continue to Reframe →
+    </a>
+  </div>
+</div>
+
+          {/* Layer 3 — Reframe */}
+          <div
+            id="reframe"
+            className="threshold-layer flex min-h-screen flex-col items-center justify-center px-6 py-24 md:px-10">
+            <div className="w-full max-w-3xl">
+              <p className="mb-8 text-xs uppercase tracking-[0.35em] text-[#d7ba7d]">
+                Layer 3 · Reframe
+              </p>
+
+              <div className="space-y-6 text-base leading-8 text-white/84 md:text-xl md:leading-[1.65]">
+                <p>Maybe the problem is not that you failed.</p>
+
+                <p className="text-white/72">
+                  Maybe you adapted to environments that required you to abandon
+                  parts of yourself just to keep functioning inside them.
+                </p>
+
+                <p>At first, adaptation protects you.</p>
+
+                <p className="text-white/72">
+                  Then it becomes automatic.
+                </p>
+
+                <p>Then one day you realize:</p>
+
+                <p className="text-white/72">
+                  You cannot remember the last time you made decisions from
+                  clarity instead of survival.
+                </p>
+
+                <p>That does not mean you are broken.</p>
+
+                <p>
+                  It means the pattern has been repeating itself for too long.
+                </p>
+              </div>
+
+              <a
+                href="#orientation"
+                className="mt-12 inline-flex rounded-full border border-[#d7ba7d]/35 bg-[#d7ba7d]/10 px-6 py-3 text-sm font-medium text-[#f3dfaa] transition hover:border-[#d7ba7d]/80 hover:bg-[#d7ba7d]/18"
+              >
+                Continue to Orientation →
+              </a>
+            </div>
+          </div>
+
+          {/* Layer 4 — Orientation */}
+          <div
+            id="orientation"
+            className="threshold-layer flex min-h-screen flex-col items-center justify-center px-6 py-24 md:px-10">
+            <div className="w-full max-w-3xl">
+              <p className="mb-8 text-xs uppercase tracking-[0.35em] text-[#d7ba7d]">
+                Layer 4 · Orientation
+              </p>
+
+              <div className="space-y-6 text-base leading-8 text-white/84 md:text-xl md:leading-[1.65]">
+                <p>
+                  the codeXverse™ was not created to tell people who they are.
+                </p>
+
+                <p className="text-white/72">
+                  It was created to help them see clearly enough to decide that
+                  for themselves again.
+                </p>
+
+                <p>This is not therapy.</p>
+
+                <p className="text-white/72">
+                  Not motivation.
+                </p>
+
+                <p>Not performance.</p>
+
+                <p className="text-white/72">
+                  This is a guided pathway of reflection, recognition, and
+                  conscious action.
+                </p>
+
+                <p>A place where patterns become visible.</p>
+
+                <p className="text-white/72">
+                  Choices become intentional.
+                </p>
+
+                <p>And movement becomes possible again.</p>
+
+                <p className="text-white/72">
+                  Not overnight. Not artificially.
+                </p>
+
+                <p>Honestly.</p>
+              </div>
+
+              <a
+                href="#loop"
+                className="mt-12 inline-flex rounded-full border border-[#d7ba7d]/35 bg-[#d7ba7d]/10 px-6 py-3 text-sm font-medium text-[#f3dfaa] transition hover:border-[#d7ba7d]/80 hover:bg-[#d7ba7d]/18"
+              >
+                Continue to the eXverse Loop™ →
+              </a>
+            </div>
+          </div>
+
+          {/* Layer 5 — The eXverse Loop™ */}
+          <div
+            id="loop"
+            className="threshold-layer flex min-h-screen flex-col items-center justify-center px-6 py-24 md:px-10">
+            <div className="w-full max-w-3xl">
+              <p className="mb-8 text-xs uppercase tracking-[0.35em] text-[#d7ba7d]">
+                Layer 5 · The eXverse Loop™
+              </p>
+
+              <div className="space-y-6 text-base leading-8 text-white/84 md:text-xl md:leading-[1.65]">
+                <p>Everything begins with a return.</p>
+
+                <p className="text-white/72">
+                  Not to who you used to be.
+                </p>
+
+                <p>To awareness.</p>
+
+                <p className="text-white/72">
+                  From there, the system responds to how you move.
+                </p>
+
+                <p>
+                  Every moment of honesty opens a different door.
+                </p>
+
+                <div className="space-y-3 rounded-[2rem] border border-[#d7ba7d]/20 bg-white/[0.03] p-7 text-xl text-white/82 md:text-2xl">
+                  <p>Return.</p>
+                  <p>Door.</p>
+                  <p>Pathway.</p>
+                  <p>Action.</p>
+                </div>
+
+                <p className="text-white/72">
+                  Each decision reveals something.
+                </p>
+
+                <p>
+                  Each pathway asks something different of you.
+                </p>
+
+                <p className="text-white/72">
+                  Each action changes what becomes available next.
+                </p>
+
+                <p>You do not move through the experience passively.</p>
+
+                <p>
+                  The experience moves with you.
+                </p>
+              </div>
+
+              <a
+                href="#return-to-self"
+                className="mt-12 inline-flex rounded-full border border-[#d7ba7d]/35 bg-[#d7ba7d]/10 px-6 py-3 text-sm font-medium text-[#f3dfaa] transition hover:border-[#d7ba7d]/80 hover:bg-[#d7ba7d]/18"
+              >
+                Continue to Return to Self →
+              </a>
+            </div>
+          </div>
+
+          {/* Layer 6 — Return to Self */}
+          <div
+            id="return-to-self"
+            className="threshold-layer flex min-h-screen flex-col items-center justify-center px-6 py-24 md:px-10">
+            <div className="w-full max-w-3xl">
+              <p className="mb-8 text-xs uppercase tracking-[0.35em] text-[#d7ba7d]">
+                Layer 6 · Return to Self
+              </p>
+
+              <div className="space-y-6 text-base leading-8 text-white/84 md:text-xl md:leading-[1.65]">
+                <p>
+                  Most people spend years waiting for clarity before they
+                  change.
+                </p>
+
+                <p className="text-white/72">
+                  But clarity rarely arrives first.
+                </p>
+
+                <p>
+                  Usually, the first thing that happens is simpler than that.
+                </p>
+
+                <p className="text-white/72">
+                  You finally stop avoiding what you already know.
+                </p>
+
+                <p>
+                  And once you see it clearly, you cannot unsee it.
+                </p>
+
+                <p className="text-white/72">
+                  Maybe this is the moment you stop leaving yourself behind.
+                </p>
+
+                <a
+                  href="#pathway-one"
+                  className="mt-8 inline-flex rounded-full border border-[#d7ba7d]/45 bg-[#d7ba7d]/10 px-7 py-3 text-base font-medium text-[#f3dfaa] transition hover:border-[#d7ba7d]/80 hover:bg-[#d7ba7d]/18"
+                >
+                  Return
+                </a>
+              </div>
+            </div>
+          </div>
+
         </div>
       </section>
+
+      {/* ── Below the threshold — these sections do not change ── */}
 
       <section id="what-this-is" className="bg-[#0d0d14] px-6 py-20 md:px-10">
         <div className="mx-auto max-w-7xl">
@@ -253,8 +544,8 @@ export default function Home() {
                     phone and no noise.
                   </li>
                   <li>
-                    Place one hand on your chest and ask: “What have I needed
-                    from myself that I have not been giving?”
+                    Place one hand on your chest and ask: "What have I needed
+                    from myself that I have not been giving?"
                   </li>
                   <li>Write one truth you have been avoiding.</li>
                   <li>
@@ -326,12 +617,12 @@ export default function Home() {
         </div>
       </section>
 
-<footer className="border-t border-white/10 bg-[#0a0a0f]">
-  <div className="mx-auto flex max-w-7xl flex-col gap-3 px-6 py-8 text-sm text-white/55 md:px-10 md:flex-row md:items-center md:justify-between">
-    <p>D. Claire — the codeXverse™</p>
-    <p>Reclaim. Rebuild. Reveal.</p>
-  </div>
-</footer>
-</main>
-);
+      <footer className="border-t border-white/10 bg-[#0a0a0f]">
+        <div className="mx-auto flex max-w-7xl flex-col gap-3 px-6 py-8 text-sm text-white/55 md:px-10 md:flex-row md:items-center md:justify-between">
+          <p>D. Claire — the codeXverse™</p>
+          <p>Reclaim. Rebuild. Reveal.</p>
+        </div>
+      </footer>
+    </main>
+  );
 }
