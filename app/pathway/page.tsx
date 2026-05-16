@@ -44,6 +44,7 @@ export default function PathwayPage() {
           opacity: openingComplete ? 1 : 0,
           transition: 'opacity 0.8s ease-in-out',
           pointerEvents: openingComplete ? 'auto' : 'none',
+          visibility: openingComplete ? 'visible' : 'hidden',
         }}
       >
         <Suspense fallback={null}>

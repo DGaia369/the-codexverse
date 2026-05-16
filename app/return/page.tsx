@@ -173,7 +173,7 @@ if (lockMessage) {
 }
 
   return (
-    <main className="min-h-screen bg-black text-white px-6 py-16">
+    <main className="min-h-screen bg-black text-white px-6 py-16 animate-fadeIn">
       <div className="mx-auto max-w-2xl">
        <p className="mb-4 text-xs tracking-[0.3em] text-[#d7ba7d]">
   the codeXverse™

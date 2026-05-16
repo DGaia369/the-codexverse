@@ -18,6 +18,14 @@ export default function BeginPage() {
   const [sessionId, setSessionId] = useState<string>('');
   const [flowNumber, setFlowNumber] = useState<number>(0);
   const [loading, setLoading] = useState(true);
+  
+const arrivalScreens = [
+  "You found this place.\n\nThat was not an accident.",
+  "There is nothing you need to do right now.\n\nJust arrive.\n\nYou belong here.",
+];
+const [arrivalIndex, setArrivalIndex] = useState<number | null>(0);
+
+const [showSigil, setShowSigil] = useState(false);
 
   useEffect(() => {
     const id = crypto.randomUUID();
@@ -53,69 +61,123 @@ export default function BeginPage() {
     loadFlow();
   }, []);
 
-  function advance() {
-    if (locked || !visible) return;
-    setLocked(true);
+ function advance() {
+  if (locked || !visible) return;
+  setLocked(true);
 
-    if (currentIndex < screens.length - 1) {
-      setVisible(false);
-      setTimeout(() => {
-        setCurrentIndex((i) => i + 1);
+  // Still in arrival sequence
+  if (arrivalIndex !== null) {
+    setVisible(false);
+    setTimeout(() => {
+      if (arrivalIndex < arrivalScreens.length - 1) {
+        setArrivalIndex(arrivalIndex + 1);
         setVisible(true);
         setLocked(false);
-      }, 700);
-    } else {
-supabase.from('participant_flows').insert({
-  session_id: sessionId,
-  flow_number: flowNumber,
-}).then(async () => {
-  await supabase.from('returns').insert({
-    session_id: sessionId,
-    door: 'return_to_self',
-    pathway: 'return_to_self',
-    response_category: 'general',
-    next_instruction: null,
-    status: 'active',
-  });
-  window.location.href = `/pathway/return-to-self?session_id=${encodeURIComponent(sessionId)}`;
-});
-    }
+      } else {
+        // Arrival complete — show sigil
+        setArrivalIndex(null);
+        setShowSigil(true);
+        setVisible(true);
+        setLocked(false);
+      }
+    }, 700);
+    return;
   }
+
+  // Sigil phase
+  if (showSigil) {
+    setVisible(false);
+    setTimeout(() => {
+      setShowSigil(false);
+      setVisible(true);
+      setLocked(false);
+    }, 700);
+    return;
+  }
+
+  // Normal flow advance — untouched
+  if (currentIndex < screens.length - 1) {
+    setVisible(false);
+    setTimeout(() => {
+      setCurrentIndex((i) => i + 1);
+      setVisible(true);
+      setLocked(false);
+    }, 700);
+  } else {
+    supabase.from('participant_flows').insert({
+      session_id: sessionId,
+      flow_number: flowNumber,
+    }).then(async () => {
+      await supabase.from('returns').insert({
+        session_id: sessionId,
+        door: 'return_to_self',
+        pathway: 'return_to_self',
+        response_category: 'general',
+        next_instruction: null,
+        status: 'active',
+      });
+      window.location.href = `/pathway/return-to-self?session_id=${encodeURIComponent(sessionId)}`;
+    });
+  }
+}
 
   if (loading) {
     return <main className="min-h-screen bg-black" />;
   }
 
-  const current = screens[currentIndex];
-  const isFinal = current?.is_final_screen ?? false;
+  const isInArrival = arrivalIndex !== null;
+  const current = isInArrival
+  ? { content: arrivalScreens[arrivalIndex!] }
+  : screens[currentIndex];
+  const isFinal = isInArrival ? false : (screens[currentIndex]?.is_final_screen ?? false);
 
-  return (
-    <main className="min-h-screen bg-black text-white flex items-center justify-center px-8">
-      <div className="max-w-xl w-full">
-        <div
-          style={{
-            opacity: visible ? 1 : 0,
-            transform: visible ? 'translateY(0)' : 'translateY(12px)',
-            transition: 'opacity 0.7s ease, transform 0.7s ease',
-            pointerEvents: locked ? 'none' : 'auto',
-          }}
-        >
-          <p className="text-xs tracking-[0.3em] text-[#d7ba7d] mb-16">
-            the codeXverse™
-          </p>
+ return (
+  <main className="min-h-screen bg-black text-white flex items-center justify-center px-8">
+    <div className="max-w-xl w-full">
+      <div
+        style={{
+          opacity: visible ? 1 : 0,
+          transform: visible ? 'translateY(0)' : 'translateY(12px)',
+          transition: 'opacity 0.7s ease, transform 0.7s ease',
+          pointerEvents: locked ? 'none' : 'auto',
+        }}
+      >
+        {showSigil ? (
+  <div className="flex flex-col items-center justify-center min-h-screen -mt-16">
+    <img
+      src="/Sigil.png"
+      alt=""
+      onClick={advance}
+      style={{
+        width: '260px',
+        mixBlendMode: 'lighten',
+        filter: 'drop-shadow(0 0 32px rgba(215, 186, 125, 0.45))',
+        cursor: 'pointer',
+        transition: 'opacity 0.3s ease',
+      }}
+      className="hover:opacity-75"
+    />
+  </div>
+        ) : (
+          <>
+            <p className="text-xs tracking-[0.3em] text-[#d7ba7d] mb-16">
+              the codeXverse™
+            </p>
 
-          <div className="space-y-5 text-xl leading-10 text-white/88 whitespace-pre-line font-light">
-            {current?.content}
-          </div>
+            <div className="space-y-5 text-xl leading-10 text-white/88 whitespace-pre-line font-light">
+              {current?.content}
+            </div>
 
-          <button
-            onClick={advance}
-            className="mt-16 text-sm text-[#f3dfaa] tracking-[0.2em] border-b border-[#d7ba7d]/30 pb-1 hover:border-[#d7ba7d]/80 transition-all duration-300 bg-transparent"
-          >
-            {isFinal ? 'I am ready' : 'continue'}
-          </button>
-        </div>
+            <button
+              onClick={advance}
+              className="mt-16 text-sm text-[#f3dfaa] tracking-[0.2em] border-b border-[#d7ba7d]/30 pb-1 hover:border-[#d7ba7d]/80 transition-all duration-300 bg-transparent"
+            >
+              {isFinal ? 'I am ready' : 'continue'}
+            </button>
+          </>
+        )}
       </div>
-    </main>
-  );
+    </div>
+  </main>
+);
 }

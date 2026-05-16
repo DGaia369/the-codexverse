@@ -195,6 +195,7 @@ function PathwayInner() {
         if (!isActive) return;
         setError('This page cannot open without a valid session. Return to the beginning and enter through the codeXverse™ properly.');
         setLoading(false);
+        setReady(true);
         return;
       }
 
@@ -211,6 +212,7 @@ function PathwayInner() {
       if (fetchError) {
         setError(fetchError.message || 'Unable to load your pathway.');
         setLoading(false);
+        setReady(true);
         return;
       }
 
@@ -219,24 +221,28 @@ function PathwayInner() {
       if (!row) {
         setError('This session does not exist. Return to the beginning and re-enter the codeXverse™.');
         setLoading(false);
+        setReady(true);
         return;
       }
 
       if (!row.door || !row.pathway || !row.session_id) {
         setError('This session is missing required pathway data. Return to the Door and choose again.');
         setLoading(false);
+        setReady(true);
         return;
       }
 
       if (row.session_id !== sessionId) {
         setError('Session validation failed. Return to the beginning and re-enter the codeXverse™.');
         setLoading(false);
+        setReady(true);
         return;
       }
 
       if (urlDoor && row.door !== urlDoor) {
         setError('Pathway access mismatch. Redirecting...');
         setLoading(false);
+        setReady(true);
         return;
       }
 
@@ -250,16 +256,17 @@ function PathwayInner() {
       const isCompleted = row.activation_completed === true;
 
       if (unlockAt && !isCompleted) {
-        const unlockTime = new Date(unlockAt).getTime();
-        const now = Date.now();
+      const unlockTime = new Date(unlockAt).getTime();
+      const now = Date.now();
 
-        if (!Number.isNaN(unlockTime) && now < unlockTime) {
-          setError('This pathway is locked for now. Go live the commitment first, then return when the lock has lifted.');
-          setLoading(false);
-          return;
-        }
-      }
-
+      if (!Number.isNaN(unlockTime) && now < unlockTime) {
+        setData(row);
+        setError('This pathway is locked for now. Go live the commitment first, then return when the lock has lifted.');
+        setLoading(false);
+        setReady(true);
+        return;
+  }
+}
          setData(row);
          setLoading(false);
          setReady(true);

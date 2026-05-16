@@ -34,12 +34,12 @@ export default function PathwayOpening({ onComplete, isReturn = false }: Pathway
     schedule(() => setPhase('lotus'), 1800 * fast);
 
     // Letters begin after the lotus has fully breathed in
-    const lettersStart = isReturn ? 3000 : 7000;
+    const lettersStart = isReturn ? 2000 : 4000;
     schedule(() => setPhase('letters'), lettersStart * fast);
 
     // Each letter arrives slowly, with real space between
     LETTERS.forEach((_, i) => {
-      const letterDelay = lettersStart + (isReturn ? 420 : 800) * (i + 1);
+      const letterDelay = lettersStart + (isReturn ? 420 : 1200) * (i + 1);
       schedule(() => {
         setVisibleLetters((prev) => {
           const next = [...prev];
@@ -145,8 +145,8 @@ export default function PathwayOpening({ onComplete, isReturn = false }: Pathway
               display: 'inline-block',
               opacity: visibleLetters[i] ? 1 : 0,
               transform: visibleLetters[i]
-                ? 'translateY(0) scale(1)'
-                : `translateY(${i % 2 === 0 ? '12px' : '-10px'}) scale(0.7)`,
+                ? 'translateY(0) translateX(0) scale(1)'
+                : `translateY(${[-22, 18, -14, 20, -18, 15, -20][i]}px) translateX(${[-30, 25, -20, 35, -28, 22, -32][i]}px) scale(0.6)`,
               transition:
                 'opacity 1.4s cubic-bezier(0.23,1,0.32,1), transform 1.4s cubic-bezier(0.23,1,0.32,1)',
             }}
