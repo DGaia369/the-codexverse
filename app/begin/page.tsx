@@ -146,18 +146,19 @@ export default function BeginPage() {
           {showSigil ? (
             <div className="flex flex-col items-center justify-center min-h-screen -mt-16">
               <img
-                src="/Sigil.png"
-                alt=""
-                onClick={advance}
-                style={{
-                  width: '260px',
-                  mixBlendMode: 'lighten',
-                  filter: 'drop-shadow(0 0 32px rgba(215, 186, 125, 0.45))',
-                  cursor: 'pointer',
-                  transition: 'opacity 0.3s ease',
-                }}
-                className="hover:opacity-75"
-              />
+             src="/Sigil.png"
+             alt=""
+             onClick={advance}
+             style={{
+               width: '420px',
+               mixBlendMode: 'lighten',
+               filter: 'drop-shadow(0 0 40px rgba(215, 186, 125, 0.5))',
+               cursor: 'pointer',
+               transition: 'opacity 0.3s ease',
+               
+              }}
+           className="hover:opacity-75"
+           />
             </div>
           ) : (
             <>

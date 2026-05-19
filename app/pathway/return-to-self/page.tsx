@@ -16,25 +16,90 @@ type ReturnRow = {
   pathway: string | null;
 };
 
+const encounters = [
+  "Where have you been abandoning yourself?",
+  "What have you been pretending not to know?",
+  "Where are you still performing instead of living?",
+  "What part of yourself have you been leaving behind?",
+  "Where have you been shrinking to keep the peace?",
+  "What truth have you been too afraid to say out loud?",
+  "Where have you stopped showing up for yourself?",
+];
+
+const activations = [
+  {
+    opening: "Tonight, create a quiet return space.",
+    steps: [
+      "Put your phone away.",
+      "Sit in silence or take a warm bath for 10 minutes.",
+      `Place one hand on your chest and ask: "What have I needed from myself that I have not been giving?"`,
+      "Write one truth you have been avoiding.",
+      "End by writing one commitment you are willing to keep for the next 24 hours.",
+    ],
+  },
+  {
+    opening: "Before you sleep tonight, do this one thing.",
+    steps: [
+      "Find a quiet space. Even 5 minutes counts.",
+      "Write the name of one person you have been putting before yourself.",
+      "Below that name, write what you have given up to do so.",
+      "Then write: what would it look like to choose myself today?",
+      "Close the journal. Do not explain it to anyone.",
+    ],
+  },
+  {
+    opening: "This is your activation for today.",
+    steps: [
+      "Set a timer for 10 minutes.",
+      "Write without stopping: where in my life am I living on autopilot?",
+      "Do not edit. Do not cross out. Let it come.",
+      "When the timer ends, read back what you wrote.",
+      "Circle one sentence that surprises you. That is where the work begins.",
+    ],
+  },
+  {
+    opening: "Tonight you are not fixing anything. You are only witnessing.",
+    steps: [
+      "Sit somewhere you feel safe.",
+      "Place both hands on your knees. Feel the weight of your own body.",
+      `Ask yourself quietly: "What emotion have I been carrying that I have not named?"`,
+      "Name it. Write it down if you need to.",
+      "Say out loud or in silence: I see you. I am not running from you anymore.",
+    ],
+  },
+  {
+    opening: "Your activation today is about reclamation.",
+    steps: [
+      "Think of one thing you used to love that you quietly stopped doing.",
+      "Write down why you stopped.",
+      "Now write: what would it mean to return to that?",
+      "You do not have to return today. You only have to acknowledge it exists.",
+      "End with one small act — however small — that belongs only to you.",
+    ],
+  },
+];
+
+function pickFrom<T>(arr: T[]): T {
+  return arr[Math.floor(Math.random() * arr.length)];
+}
+
 function AccessBlocked({ message }: { message: string }) {
   return (
-    <main className="min-h-screen bg-black text-white px-6 py-16">
+    <main className="min-h-screen bg-black text-white px-6 py-16 flex items-center">
       <div className="mx-auto max-w-2xl">
-        <p className="text-xs uppercase tracking-[0.3em] text-[#d7ba7d]">
+        <p className="text-xs tracking-[0.3em] text-[#d7ba7d] mb-8">
           the codeXverse™
         </p>
-
-        <h1 className="mt-6 text-4xl font-semibold">
+        <h1 className="text-3xl font-serif leading-snug">
           This pathway cannot be entered from here.
         </h1>
-
-        <p className="mt-6 text-white/70">{message}</p>
-
-        <a
-          href="/return"
-          className="mt-8 inline-block rounded-full border border-white/20 px-5 py-2 text-sm hover:bg-white/10"
+        <p className="mt-6 text-white/60 leading-8">{message}</p>
+        
+          <a
+          href="/"
+          className="mt-10 inline-block text-sm text-[#d7ba7d] tracking-[0.2em] border-b border-[#d7ba7d]/30 pb-1"
         >
-          Return to the beginning
+          return to the beginning
         </a>
       </div>
     </main>
@@ -93,85 +158,84 @@ export default async function ReturnToSelfPage({
     const now = Date.now();
 
     if (!Number.isNaN(unlockTime) && now < unlockTime) {
-      return <AccessBlocked message="This pathway is locked for now." />;
+      return (
+        <AccessBlocked message="Go live the commitment first. This will be waiting for you when you return." />
+      );
     }
   }
 
+  const encounter = pickFrom(encounters);
+  const activation = pickFrom(activations);
+
   return (
-    <main className="min-h-screen bg-[#0a0a0f] text-white px-6 py-16">
-      <div className="mx-auto max-w-3xl">
-        <p className="text-xs tracking-[0.3em] text-[#d7ba7d] mb-4">
+    <main className="min-h-screen bg-black text-white px-6 py-20">
+      <div className="mx-auto max-w-2xl">
+        <p className="text-xs tracking-[0.3em] text-[#d7ba7d] mb-16">
           the codeXverse™
         </p>
 
-        <h1 className="text-3xl md:text-5xl font-semibold leading-tight">
+        <p className="text-xs tracking-[0.3em] text-white/30 uppercase mb-10">
           Pathway One — Return to Self
-        </h1>
+        </p>
 
-        <p className="mt-6 text-white/70 text-lg leading-8">
+        <p className="text-white/50 text-base leading-8 mb-16">
           The first breakthrough is not complexity.
           <br />
           The first breakthrough is follow-through.
         </p>
 
-        <div className="mt-12 space-y-10">
-          <section>
-            <p className="text-[#d7ba7d] text-sm uppercase tracking-[0.25em]">
-              Encounter
-            </p>
-            <div className="mt-4 rounded-3xl border border-white/10 bg-white/5 p-6">
-              <p className="text-xl leading-9">
-                Where have you been abandoning yourself?
-              </p>
-            </div>
-          </section>
+        {/* Encounter */}
+        <div className="mb-20">
+          <p className="text-xs tracking-[0.3em] text-[#d7ba7d]/60 uppercase mb-6">
+            Encounter
+          </p>
+          <p className="text-2xl font-serif leading-10 text-white/90">
+            {encounter}
+          </p>
+          <p className="mt-6 text-white/40 text-base leading-8">
+            Sit with this before you move forward.
+            <br />
+            Do not answer quickly. Let it land.
+          </p>
+        </div>
 
-          <section>
-            <p className="text-[#d7ba7d] text-sm uppercase tracking-[0.25em]">
-              Activation
-            </p>
-            <div className="mt-4 rounded-3xl border border-white/10 bg-white/5 p-6">
-              <p className="text-white/80 leading-8">
-                Tonight, create a quiet return space.
-              </p>
+        {/* Activation */}
+        <div className="mb-20">
+          <p className="text-xs tracking-[0.3em] text-[#d7ba7d]/60 uppercase mb-6">
+            Activation
+          </p>
+          <p className="text-white/70 text-base leading-9 mb-8">
+            {activation.opening}
+          </p>
+          <div className="space-y-5">
+            {activation.steps.map((step, i) => (
+              <div key={i} className="flex gap-5">
+                <span className="text-[#d7ba7d]/40 text-sm mt-1 shrink-0">
+                  {i + 1}
+                </span>
+                <p className="text-white/70 text-base leading-8">{step}</p>
+              </div>
+            ))}
+          </div>
+        </div>
 
-              <ol className="mt-4 list-decimal pl-6 space-y-3 text-white/70 leading-7">
-                <li>Put your phone away.</li>
-                <li>Sit in silence or take a warm bath for 10 minutes.</li>
-                <li>
-                  Place one hand on your chest and ask:
-                  <br />
-                  <span className="text-white">
-                    “What have I needed from myself that I have not been giving?”
-                  </span>
-                </li>
-                <li>Write one truth you have been avoiding.</li>
-                <li>
-                  End by writing one commitment you are willing to keep for the
-                  next 24 hours.
-                </li>
-              </ol>
-            </div>
-          </section>
-
-          <section>
-            <p className="text-[#d7ba7d] text-sm uppercase tracking-[0.25em]">
-              Return
-            </p>
-            <div className="mt-4 rounded-3xl border border-white/10 bg-white/5 p-6">
-              <p className="text-white/70 leading-8">
-                After you complete the ritual, return and report what happened.
-                This is where self-trust begins to rebuild.
-              </p>
-
-              <a
-                href={`/return?session_id=${encodeURIComponent(sessionId)}`}
-                className="inline-block mt-6 rounded-full bg-white text-black px-6 py-3 font-semibold hover:opacity-90"
-              >
-                Complete the Return
-              </a>
-            </div>
-          </section>
+        {/* Return */}
+        <div className="mb-10">
+          <p className="text-xs tracking-[0.3em] text-[#d7ba7d]/60 uppercase mb-6">
+            Return
+          </p>
+          <p className="text-white/50 text-base leading-8 mb-10">
+            After you complete the activation, come back and report what happened.
+            <br />
+            This is where self-trust begins to rebuild.
+          </p>
+          
+            <a
+            href={`/return?session_id=${encodeURIComponent(sessionId)}`}
+            className="text-sm text-[#f3dfaa] tracking-[0.2em] border-b border-[#d7ba7d]/30 pb-1 hover:border-[#d7ba7d]/80 transition-all duration-300"
+          >
+            complete the return
+          </a>
         </div>
       </div>
     </main>
