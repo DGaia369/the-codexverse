@@ -220,23 +220,32 @@ export default async function ReturnToSelfPage({
         </div>
 
         {/* Return */}
-        <div className="mb-10">
-          <p className="text-xs tracking-[0.3em] text-[#d7ba7d]/60 uppercase mb-6">
-            Return
-          </p>
-          <p className="text-white/50 text-base leading-8 mb-10">
-            After you complete the activation, come back and report what happened.
-            <br />
-            This is where self-trust begins to rebuild.
-          </p>
-          
-            <a
-            href={`/return?session_id=${encodeURIComponent(sessionId)}`}
-            className="text-sm text-[#f3dfaa] tracking-[0.2em] border-b border-[#d7ba7d]/30 pb-1 hover:border-[#d7ba7d]/80 transition-all duration-300"
-          >
-            complete the return
-          </a>
-        </div>
+<div className="mb-10">
+  <p className="text-xs tracking-[0.3em] text-[#d7ba7d]/60 uppercase mb-6">
+    Return
+  </p>
+  <p className="text-white/50 text-base leading-8 mb-10">
+    After you complete the activation, come back and report what happened.
+    <br />
+    This is where self-trust begins to rebuild.
+  </p>
+
+  {isCompleted || (unlockAt && Date.now() >= new Date(unlockAt).getTime()) ? (
+    
+      <a
+      href={`/return?session_id=${encodeURIComponent(sessionId)}`}
+      className="text-sm text-[#f3dfaa] tracking-[0.2em] border-b border-[#d7ba7d]/30 pb-1 hover:border-[#d7ba7d]/80 transition-all duration-300"
+    >
+      complete the return
+    </a>
+  ) : (
+    <p className="text-white/40 text-sm leading-8">
+      Go live the commitment first.
+      <br />
+      This will be here when you come back.
+    </p>
+  )}
+</div>
       </div>
     </main>
   );
