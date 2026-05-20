@@ -92,19 +92,19 @@ export default function PathwayOpening({ onComplete, isReturn = false }: Pathway
       }}
     >
       {/* Lotus background */}
-      <div
-        style={{
-          position: 'absolute',
-          inset: 0,
-          backgroundImage: 'url(/lotus-breathe.png)',
-          backgroundSize: 'auto 80%',
-          backgroundPosition: 'center 60%',
-          backgroundRepeat: 'no-repeat',
-          opacity: phase === 'dark' ? 0 : 1,
-          transition: 'opacity 3.2s cubic-bezier(0.23, 1, 0.32, 1)',
-          filter: 'brightness(0.88)',
-        }}
-      />
+<div
+  style={{
+    position: 'absolute',
+    inset: 0,
+    backgroundImage: 'url(/lotus-breathe.png)',
+    backgroundSize: 'auto 80%',
+    backgroundPosition: 'center 60%',
+    backgroundRepeat: 'no-repeat',
+    opacity: phase === 'dark' ? 0 : 1,
+    transition: 'opacity 3.2s cubic-bezier(0.23, 1, 0.32, 1)',
+    mixBlendMode: 'screen' as const,
+  }}
+/>
 
       {/* Radial glow over lotus center */}
       <div
