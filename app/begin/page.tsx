@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { supabase } from '@/utils/supabase/client';
+import { createClient } from '@/utils/supabase/client';
 
 type Screen = {
   id: string;
@@ -9,6 +9,11 @@ type Screen = {
   screen_order: number;
   is_final_screen: boolean;
 };
+
+const arrivalScreens = [
+  "You found this place.\n\nThat was not an accident.",
+  "There is nothing you need to do right now.\n\nJust arrive.\n\nYou belong here.",
+];
 
 export default function BeginPage() {
   const [screens, setScreens] = useState<Screen[]>([]);
@@ -18,19 +23,40 @@ export default function BeginPage() {
   const [sessionId, setSessionId] = useState<string>('');
   const [flowNumber, setFlowNumber] = useState<number>(0);
   const [loading, setLoading] = useState(true);
-
-  const arrivalScreens = [
-    "You found this place.\n\nThat was not an accident.",
-    "There is nothing you need to do right now.\n\nJust arrive.\n\nYou belong here.",
-  ];
   const [arrivalIndex, setArrivalIndex] = useState<number | null>(0);
   const [showSigil, setShowSigil] = useState(false);
 
   useEffect(() => {
-    const id = crypto.randomUUID();
-    setSessionId(id);
+    const supabase = createClient();
 
-    async function loadFlow() {
+    async function init() {
+      const params = new URLSearchParams(window.location.search);
+      const code = params.get('code');
+      if (code) {
+        await supabase.auth.exchangeCodeForSession(code);
+        window.history.replaceState({}, '', '/begin');
+      }
+
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        window.location.href = '/enter';
+        return;
+      }
+
+      setSessionId(user.id);
+
+      const { data: existingLoop } = await supabase
+        .from('loops')
+        .select('*')
+        .eq('user_id', user.id)
+        .eq('status', 'active')
+        .maybeSingle();
+
+      if (existingLoop) {
+        window.location.href = `/pathway/return-to-self?session_id=${encodeURIComponent(user.id)}`;
+        return;
+      }
+
       const { data: allFlows } = await supabase
         .from('participant_flows')
         .select('flow_number');
@@ -57,10 +83,10 @@ export default function BeginPage() {
       setTimeout(() => setVisible(true), 300);
     }
 
-    loadFlow();
+    init();
   }, []);
 
-  function advance() {
+  async function advance() {
     if (locked || !visible) return;
     setLocked(true);
 
@@ -99,20 +125,34 @@ export default function BeginPage() {
         setLocked(false);
       }, 700);
     } else {
-      supabase.from('participant_flows').insert({
-        session_id: sessionId,
-        flow_number: flowNumber,
-      }).then(async () => {
-        await supabase.from('returns').insert({
-          session_id: sessionId,
-          door: 'return_to_self',
-          pathway: 'return_to_self',
-          response_category: 'general',
-          next_instruction: null,
-          status: 'active',
-        });
-        window.location.href = `/pathway/return-to-self?session_id=${encodeURIComponent(sessionId)}`;
+      const supabase = createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      await supabase.from('loops').insert({
+        user_id: user.id,
+        pathway: 'return_to_self',
+        status: 'active',
+        session_id: user.id,
       });
+
+      await supabase.from('participant_flows').insert({
+        session_id: user.id,
+        user_id: user.id,
+        flow_number: flowNumber,
+      });
+
+      await supabase.from('returns').insert({
+        session_id: user.id,
+        user_id: user.id,
+        door: 'return_to_self',
+        pathway: 'return_to_self',
+        response_category: 'general',
+        next_instruction: null,
+        status: 'active',
+      });
+
+      window.location.href = `/pathway/return-to-self?session_id=${encodeURIComponent(user.id)}`;
     }
   }
 
@@ -146,19 +186,18 @@ export default function BeginPage() {
           {showSigil ? (
             <div className="flex flex-col items-center justify-center min-h-screen -mt-16">
               <img
-             src="/Sigil.png"
-             alt=""
-             onClick={advance}
-             style={{
-               width: '420px',
-               mixBlendMode: 'lighten',
-               filter: 'drop-shadow(0 0 40px rgba(215, 186, 125, 0.5))',
-               cursor: 'pointer',
-               transition: 'opacity 0.3s ease',
-               
-              }}
-           className="hover:opacity-75"
-           />
+                src="/Sigil.png"
+                alt=""
+                onClick={advance}
+                style={{
+                  width: '420px',
+                  mixBlendMode: 'lighten',
+                  filter: 'drop-shadow(0 0 40px rgba(215, 186, 125, 0.5))',
+                  cursor: 'pointer',
+                  transition: 'opacity 0.3s ease',
+                }}
+                className="hover:opacity-75"
+              />
             </div>
           ) : (
             <>

@@ -1,0 +1,137 @@
+'use client';
+
+import { useState, useEffect } from 'react';
+import { createClient } from '@/utils/supabase/client';
+
+type Stage = 'capture' | 'sent';
+
+export default function EnterPage() {
+  const [urlError, setUrlError] = useState('');
+  const [email, setEmail] = useState('');
+  const [stage, setStage] = useState<Stage>('capture');
+  const [error, setError] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const err = params.get('error');
+    if (err === 'link_expired') {
+      setUrlError('That link has expired. Enter your email and we will send a fresh one.');
+    }
+  }, []);
+
+  async function handleEnter() {
+    const clean = email.trim();
+    const valid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(clean);
+
+    if (!valid) {
+      setError('That does not look like a complete address.');
+      return;
+    }
+
+    setSubmitting(true);
+    setError('');
+
+    const supabase = createClient();
+
+    const { error: authError } = await supabase.auth.signInWithOtp({
+      email: clean,
+      options: {
+        emailRedirectTo: `${window.location.origin}/auth/callback`,
+      },
+    });
+
+    if (authError) {
+      console.error('Supabase magic link error:', authError);
+      setError(authError.message || 'Something did not go through. Try once more.');
+      setSubmitting(false);
+      return;
+    }
+
+    setStage('sent');
+    setSubmitting(false);
+  }
+
+  return (
+    <main className="min-h-screen bg-black text-white flex items-center justify-center px-8">
+      <div className="max-w-md w-full space-y-12">
+
+        <p className="text-xs tracking-[0.3em] text-[#d7ba7d]">
+          the codeXverse™
+        </p>
+
+        {stage === 'capture' && (
+          <div className="space-y-10">
+            <div className="space-y-5">
+              <p className="text-2xl font-light leading-10 text-white/90">
+                To cross this threshold,
+                <br />
+                leave your name in the room.
+              </p>
+              <p className="text-sm leading-7 text-white/40">
+                A link will be sent to you.
+                <br />
+                Click it and you will arrive here — as yourself.
+              </p>
+            </div>
+
+            <div className="space-y-4">
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => {
+                  setEmail(e.target.value);
+                  setError('');
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') handleEnter();
+                }}
+                placeholder="your email"
+                className="w-full bg-transparent border-b border-white/20 py-3 text-base text-white/90 placeholder:text-white/25 focus:outline-none focus:border-[#d7ba7d]/60 transition-colors duration-300"
+              />
+
+              {urlError && (
+                <p className="text-sm text-[#d7ba7d]/70 italic">{urlError}</p>
+              )}
+
+              {error && (
+                <p className="text-sm text-[#d7ba7d]/60 italic">{error}</p>
+              )}
+
+              <button
+                onClick={handleEnter}
+                disabled={submitting}
+                className="mt-4 text-sm text-[#f3dfaa] tracking-[0.2em] border-b border-[#d7ba7d]/30 pb-1 hover:border-[#d7ba7d]/80 transition-all duration-300 bg-transparent disabled:opacity-40"
+              >
+                {submitting ? 'sending...' : 'enter'}
+              </button>
+            </div>
+          </div>
+        )}
+
+        {stage === 'sent' && (
+          <div className="space-y-8">
+            <div className="space-y-5">
+              <p className="text-2xl font-light leading-10 text-white/90">
+                The door is open.
+              </p>
+              <p className="text-base leading-8 text-white/50">
+                A link is on its way to you.
+                <br /><br />
+                When it arrives, click it.
+                <br />
+                You will land exactly where you are meant to be.
+              </p>
+              <p className="text-sm leading-7 text-white/25 italic">
+                No password. No account to manage.
+                <br />
+                Just you, returning.
+              </p>
+            </div>
+          </div>
+        )}
+
+      </div>
+    </main>
+  );
+}

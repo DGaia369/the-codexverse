@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { supabase } from "@/utils/supabase/client";
+import { createClient } from "@/utils/supabase/client";
 import PathwayOpening from "@/components/threshold/PathwayOpening";
+
 const returnMessages = [
   {
     headline: "You came back.",
@@ -34,6 +35,55 @@ const returnMessages = [
   },
 ];
 
+const integrateScreen2Pool = [
+  `What you completed today has a name.\n\nIt is called keeping your word to yourself.\n\nYou have kept your word to everyone else your entire life.\n\nToday you were on the list.`,
+  `Do you know how many people felt what you felt today and turned away?\n\nThey are still sitting with it.\n\nYou are here.\n\nThat is the only difference between people who change and people who mean to.\n\nYou showed up.`,
+  `Something in you has been waiting a long time for you to come back.\n\nIt did not give up.\n\nIt just got quieter and quieter until you were ready to hear it again.\n\nYou heard it today.\n\nThat sound you heard was yourself.`,
+  `You just did something most people spend their whole lives preparing to do.\n\nThey read about it.\n\nThey talk about it.\n\nThey save quotes about it.\n\nYou did it.\n\nToday, in this life, with everything you are carrying, you did it.`,
+  `The woman who started this today and the woman finishing it are already different people.\n\nYou cannot feel that yet.\n\nYou will.\n\nSomething has already moved that will never fully go back.`,
+  `You came back to yourself today.\n\nThink about what that means.\n\nThink about how many times you did not.\n\nThink about how many times the noise won, the exhaustion won, the voice that said you were not worth the effort won.\n\nToday you won.`,
+];
+
+const integrateScreen3Pool = [
+  `Do not abandon yourself just because someone else did.`,
+  `You have been so loyal to everyone who was never loyal to you.\n\nImagine what becomes possible when you turn that loyalty inward.`,
+  `The life you have been waiting for permission to live is yours.\n\nIt always was.`,
+  `Every time you came back to yourself today you broke a pattern that has run your life longer than you know.\n\nThat is what today was.\n\nA break in the pattern.`,
+  `You are not doing this for who you might become.\n\nYou are doing this for who you already are.\n\nShe has been here the whole time.\n\nWaiting.`,
+  `You will forget this moment.\n\nLife will come back in and the noise will return and some part of you will try to make this smaller than it was.\n\nRemember it was not small.\n\nRemember you chose yourself.\n\nRemember that was everything.`,
+];
+
+const integrateScreen4Pool = [
+  {
+    label: "A ritual to take home",
+    body: `Tonight, run warm water.\n\nAdd milk, salt, rose petals, or nothing at all.\n\nA few drops of lavender, rose, chamomile, or geranium if you have them.\n\nSit in the warmth.\n\nPlace one hand on your chest.\n\nSay out loud or in silence:`,
+    affirmation: `I am here.\nI came back.\nThat is enough.`,
+    closing: `This is not a bath.\n\nThis is you coming home to yourself.\n\nIf water is not your space, find it another way. A long shower. A warm cloth held to your face. Your hands under the tap, slow and warm.\n\nWherever you find it, one hand on your chest.\n\nI am here. I came back. That is enough.`,
+  },
+  {
+    label: "A ritual to take home",
+    body: `Tonight, write yourself a letter.\n\nBegin with:`,
+    affirmation: `Today I came back to myself and I want you to know`,
+    closing: `Write until something true comes out.\n\nDo not edit it.\n\nDo not explain it to anyone.\n\nFold it. Put it somewhere you will find it when you have forgotten that you are worth coming back to.\n\nBecause you will forget.\n\nAnd she will need to hear it from you.`,
+  },
+  {
+    label: "A ritual to take home",
+    body: `Tonight you are doing one thing that belongs only to you.\n\nIt cannot be useful to anyone else.\n\nIt cannot be productive.\n\nIt cannot be in service of someone else's comfort or schedule or need.\n\nYours.\n\nChoose it before you leave this page.\n\nIf you cannot think of one thing that belongs only to you, that is the most important information you have received today.`,
+    affirmation: ``,
+    closing: ``,
+  },
+  {
+    label: "A ritual to take home",
+    body: `Before you sleep tonight, lie down somewhere quiet.\n\nPlace both hands on your chest.\n\nFeel the weight of your own hands.\n\nSay nothing. Plan nothing.\n\nJust let your body understand that today it was taken care of.\n\nThat you came back.\n\nThat it does not have to brace anymore.\n\nIt has been bracing for a long time.\n\nLet it rest.`,
+    affirmation: ``,
+    closing: ``,
+  },
+];
+
+function pickFrom<T>(arr: T[]): T {
+  return arr[Math.floor(Math.random() * arr.length)];
+}
+
 const MIN_CHARS = 20;
 
 function fieldError(value: string): string | null {
@@ -55,9 +105,10 @@ export default function ReturnPage() {
   const [errorMessage, setErrorMessage] = useState("");
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [lockMessage, setLockMessage] = useState("");
-  const [selectedMessage, setSelectedMessage] = useState<
-    (typeof returnMessages)[0] | null
-  >(null);
+  const [selectedMessage, setSelectedMessage] = useState<(typeof returnMessages)[0] | null>(null);
+  const [selectedScreen2, setSelectedScreen2] = useState("");
+  const [selectedScreen3, setSelectedScreen3] = useState("");
+  const [selectedScreen4, setSelectedScreen4] = useState<(typeof integrateScreen4Pool)[0] | null>(null);
   const [integrateIndex, setIntegrateIndex] = useState(0);
   const [integrateVisible, setIntegrateVisible] = useState(true);
   const [lotusComplete, setLotusComplete] = useState(false);
@@ -66,6 +117,7 @@ export default function ReturnPage() {
     let isActive = true;
 
     async function checkReturnLock() {
+      const supabase = createClient();
       const params = new URLSearchParams(window.location.search);
       const savedRoutingRaw = localStorage.getItem("codexverse_routing");
       const savedRouting = savedRoutingRaw ? JSON.parse(savedRoutingRaw) : null;
@@ -144,6 +196,8 @@ export default function ReturnPage() {
     setFieldErrors({});
 
     try {
+      const { data: { user } } = await createClient().auth.getUser();
+
       const res = await fetch("/api/return", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -154,6 +208,7 @@ export default function ReturnPage() {
           q4TruthRevealed,
           q5NonNegotiable,
           email,
+          user_id: user?.id || null,
         }),
       });
 
@@ -175,9 +230,24 @@ export default function ReturnPage() {
         return;
       }
 
-      const picked =
-        returnMessages[Math.floor(Math.random() * returnMessages.length)];
+      if (result.ok) {
+        const supabase = createClient();
+        const { data: { user: currentUser } } = await supabase.auth.getUser();
+        if (currentUser) {
+          await supabase
+            .from('loops')
+            .update({ status: 'completed', completed_at: new Date().toISOString() })
+            .eq('user_id', currentUser.id)
+            .eq('status', 'active');
+        }
+      }
+
+      // Pick randomized content for integrate screens
+      const picked = pickFrom(returnMessages);
       setSelectedMessage(picked);
+      setSelectedScreen2(pickFrom(integrateScreen2Pool));
+      setSelectedScreen3(pickFrom(integrateScreen3Pool));
+      setSelectedScreen4(pickFrom(integrateScreen4Pool));
       setSubmitted(true);
       setIsSubmitting(false);
     } catch (err) {
@@ -220,7 +290,6 @@ export default function ReturnPage() {
             the codeXverse™
           </p>
 
-          {/* Lotus BREATHE — position 5 in the locked flow */}
           {integrateIndex === 1 && !lotusComplete && (
             <PathwayOpening
               isReturn={true}
@@ -239,7 +308,6 @@ export default function ReturnPage() {
             }}
             className="mt-8"
           >
-            {/* Index 0 — randomized return message */}
             {integrateIndex === 0 && selectedMessage && (
               <div className="space-y-6">
                 <p className="text-2xl font-serif text-[#d7ba7d] leading-snug">
@@ -257,13 +325,10 @@ export default function ReturnPage() {
               </div>
             )}
 
-            {/* Index 1 — Lotus BREATHE — rendered above, nothing here */}
-
-            {/* Index 2 — conscious return named */}
             {integrateIndex === 2 && (
               <div className="space-y-6">
                 <p className="text-white/90 text-lg leading-9 whitespace-pre-line">
-                  {`What you completed today has a name.\n\nIt is called a conscious return.\n\nIt is the practice of noticing you have drifted from yourself and choosing to come back.\n\nIt is the most courageous thing one can do.`}
+                  {selectedScreen2}
                 </p>
                 <button
                   onClick={() => advanceIntegrate(3)}
@@ -274,12 +339,11 @@ export default function ReturnPage() {
               </div>
             )}
 
-            {/* Index 3 — sentence to carry */}
             {integrateIndex === 3 && (
               <div className="space-y-10">
                 <div className="border-l-2 border-[#d7ba7d]/40 pl-6">
-                  <p className="text-[#d7ba7d] text-2xl font-serif leading-10 italic">
-                    Do not abandon yourself just because someone else did.
+                  <p className="text-[#d7ba7d] text-2xl font-serif leading-10 italic whitespace-pre-line">
+                    {selectedScreen3}
                   </p>
                 </div>
                 <button
@@ -291,39 +355,24 @@ export default function ReturnPage() {
               </div>
             )}
 
-            {/* Index 4 — ritual to take home */}
-            {integrateIndex === 4 && (
+            {integrateIndex === 4 && selectedScreen4 && (
               <div className="space-y-8">
                 <p className="text-xs tracking-[0.3em] text-[#d7ba7d]/60 uppercase">
-                  A ritual to take home
+                  {selectedScreen4.label}
                 </p>
-                <div className="space-y-3">
-                  <p className="text-white/80 text-base leading-9 whitespace-pre-line">
-                    {`Tonight, run warm water.\nAdd milk, salt, rose petals, or nothing at all.\nA few drops of lavender, rose, chamomile, or geranium if you have them.\nSit in the warmth.\nPlace one hand on your chest.\nSay out loud or in silence:`}
-                  </p>
+                <p className="text-white/80 text-base leading-9 whitespace-pre-line">
+                  {selectedScreen4.body}
+                </p>
+                {selectedScreen4.affirmation ? (
                   <p className="text-[#d7ba7d] text-lg font-serif italic leading-9 pl-4 whitespace-pre-line">
-                    {`I am here.\nI came back.\nThat is enough.`}
+                    {selectedScreen4.affirmation}
                   </p>
-                  <p className="text-white/60 text-base leading-8 italic mt-4">
-                    This is not a bath.
-                    <br />
-                    This is you coming home to yourself.
+                ) : null}
+                {selectedScreen4.closing ? (
+                  <p className="text-white/60 text-base leading-8 whitespace-pre-line mt-4">
+                    {selectedScreen4.closing}
                   </p>
-                </div>
-                <p className="text-white/30 text-sm tracking-[0.2em]">— or —</p>
-                <div className="space-y-3">
-                  <p className="text-white/80 text-base leading-9 whitespace-pre-line">
-                    {`If a bath is not your space,\nfind warm water another way.\nA long shower. A warm cloth held to your face.\nYour hands under running water, warm and slow.\n\nWherever you find it,\nplace one hand on your chest.\nFeel your own warmth meeting the water's warmth.\nSay out loud or in silence:`}
-                  </p>
-                  <p className="text-[#d7ba7d] text-lg font-serif italic leading-9 pl-4 whitespace-pre-line">
-                    {`I am here.\nI came back.\nThat is enough.`}
-                  </p>
-                  <p className="text-white/60 text-base leading-8 italic mt-4">
-                    This is not water.
-                    <br />
-                    This is you coming home to yourself.
-                  </p>
-                </div>
+                ) : null}
                 <button
                   onClick={() => advanceIntegrate(5)}
                   className="text-sm text-[#f3dfaa] tracking-[0.2em] border-b border-[#d7ba7d]/30 pb-1 hover:border-[#d7ba7d]/80 transition-all duration-300 bg-transparent"
@@ -333,7 +382,6 @@ export default function ReturnPage() {
               </div>
             )}
 
-            {/* Index 5 — invitation to go deeper */}
             {integrateIndex === 5 && (
               <div className="space-y-8">
                 <p className="text-sm text-white/40 leading-7">
@@ -342,18 +390,18 @@ export default function ReturnPage() {
                   Even when the feeling changes.
                 </p>
                 <p className="text-white/60 text-base leading-8 italic whitespace-pre-line">
-                  {`If something in you is not ready to stop here,\nthere is more.\nNot because you need fixing.\nBecause you are worth continuing.`}
+                  {`If something in you is not ready to stop here,\nthere is more.\nBecause you are worth continuing.`}
                 </p>
                 
-                <a
-                href="/"
+                  <a
+                  href="/"
                   className="inline-block text-sm text-[#d7ba7d] tracking-[0.2em] border-b border-[#d7ba7d]/30 pb-1 hover:border-[#d7ba7d]/80 transition-all duration-300"
                 >
                   I want to go deeper →
                 </a>
                 <div className="pt-10">
                   
-                  <a
+                    <a
                     href="/"
                     className="inline-block rounded-full border border-white/20 px-5 py-2 text-sm hover:bg-white/10"
                   >

@@ -23,6 +23,7 @@ export async function POST(req: Request) {
       q4TruthRevealed,
       q5NonNegotiable,
       email,
+      user_id,
     } = body;
 
     const session_id = crypto.randomUUID();
@@ -61,9 +62,9 @@ pathway = options[Math.floor(Math.random() * options.length)];
     });
 
     const now = new Date();
-const unlockAt = new Date(now.getTime() + 24 * 60 * 60 * 1000); // +24 hours
+    const unlockAt = new Date(now.getTime() + 2 * 60 * 60 * 1000); // +2 hours
 
-const status = "submitted";
+    const status = "submitted";
 
     console.log("Computed ACT values:", {
       response_category,
@@ -109,6 +110,7 @@ console.log("COLUMN TEST RESULT:", columnTest);
   activation_committed_at: now.toISOString(),
   activation_unlock_at: unlockAt.toISOString(),
   activation_completed: false,
+  user_id: user_id || null,
       },
     ]);
 

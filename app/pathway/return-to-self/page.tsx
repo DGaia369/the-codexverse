@@ -74,7 +74,7 @@ const activations = [
       "Write down why you stopped.",
       "Now write: what would it mean to return to that?",
       "You do not have to return today. You only have to acknowledge it exists.",
-      "End with one small act — however small — that belongs only to you.",
+      "End with one small act, however small, that belongs only to you.",
     ],
   },
 ];
@@ -239,11 +239,25 @@ export default async function ReturnToSelfPage({
       complete the return
     </a>
   ) : (
-    <p className="text-white/40 text-sm leading-8">
-      Go live the commitment first.
-      <br />
-      This will be here when you come back.
-    </p>
+    <div className="space-y-6">
+  <p className="text-white/50 text-base leading-9 italic">
+    Notice what just happened in you reading that question.
+    <br />
+    That is not nothing.
+    <br />
+    That is the work beginning.
+  </p>
+  <p className="text-white/30 text-sm leading-8">
+    Go live the commitment first.
+    <br />
+    This space will hold everything you just encountered.
+    <br />
+    Return in 2 hours. Not tomorrow. Today.
+  </p>
+  <p className="text-white/20 text-xs leading-7 italic">
+    The door does not close. It waits.
+  </p>
+</div>
   )}
 </div>
       </div>

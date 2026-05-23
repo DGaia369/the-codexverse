@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { Suspense, useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { supabase } from '@/utils/supabase/client';
+import { createClient } from '@/utils/supabase/client';
 
 type ReturnRow = {
   activation_unlock_at?: string | null;
@@ -114,65 +114,34 @@ function getPathwayCTA(pathway: string | null | undefined, door?: string | null)
   const key = normalizePathway(pathway);
 
   if (door === 'rebuilding') {
-    return {
-      href: '/foundation',
-      label: 'Rebuild the Foundation',
-    };
+    return { href: '/foundation', label: 'Rebuild the Foundation' };
   }
 
   switch (key) {
     case 'return_to_self':
-      return {
-        href: '/pathway/return-to-self',
-        label: 'Begin Your Return',
-      };
+      return { href: '/pathway/return-to-self', label: 'Begin Your Return' };
     case 'rebuild_foundation':
-      return {
-        href: '/foundation',
-        label: 'Rebuild the Foundation',
-      };
+      return { href: '/foundation', label: 'Rebuild the Foundation' };
     case 'restore_rhythm':
-      return {
-        href: '/rhythm',
-        label: 'Restore Your Rhythm',
-      };
+      return { href: '/rhythm', label: 'Restore Your Rhythm' };
     case 'reclaim_voice':
-      return {
-        href: '/voice',
-        label: 'Reclaim Your Voice',
-      };
+      return { href: '/voice', label: 'Reclaim Your Voice' };
     case 'choose_again':
-      return {
-        href: '/choose-again',
-        label: 'Choose Again',
-      };
+      return { href: '/choose-again', label: 'Choose Again' };
     case 'rise_gently':
-      return {
-        href: '/rise',
-        label: 'Continue Gently',
-      };
+      return { href: '/rise', label: 'Continue Gently' };
     case 'next_step':
-      return {
-        href: '/next-step',
-        label: 'Take the Next Step',
-      };
+      return { href: '/next-step', label: 'Take the Next Step' };
     case 'guided_support':
     case 'guided_support:':
     case 'self_directed':
     case 'self_directed:':
-      return {
-        href: '/guided',
-        label: 'Continue with Guidance',
-      };
+      return { href: '/guided', label: 'Continue with Guidance' };
     default:
-      return {
-        href: '/door',
-        label: 'Return to the Door',
-      };
+      return { href: '/door', label: 'Return to the Door' };
   }
 }
 
-// Inner component — uses useSearchParams, must be wrapped in Suspense
 function PathwayInner() {
   const searchParams = useSearchParams();
 
@@ -191,6 +160,8 @@ function PathwayInner() {
     let isActive = true;
 
     async function loadPathway() {
+      const supabase = createClient();
+
       if (!sessionId) {
         if (!isActive) return;
         setError('This page cannot open without a valid session. Return to the beginning and enter through the codeXverse™ properly.');
@@ -256,20 +227,21 @@ function PathwayInner() {
       const isCompleted = row.activation_completed === true;
 
       if (unlockAt && !isCompleted) {
-      const unlockTime = new Date(unlockAt).getTime();
-      const now = Date.now();
+        const unlockTime = new Date(unlockAt).getTime();
+        const now = Date.now();
 
-      if (!Number.isNaN(unlockTime) && now < unlockTime) {
-        setData(row);
-        setError('This pathway is locked for now. Go live the commitment first, then return when the lock has lifted.');
-        setLoading(false);
-        setReady(true);
-        return;
-  }
-}
-         setData(row);
-         setLoading(false);
-         setReady(true);
+        if (!Number.isNaN(unlockTime) && now < unlockTime) {
+          setData(row);
+          setError('This pathway is locked for now. Go live the commitment first, then return when the lock has lifted.');
+          setLoading(false);
+          setReady(true);
+          return;
+        }
+      }
+
+      setData(row);
+      setLoading(false);
+      setReady(true);
     }
 
     loadPathway();
@@ -319,7 +291,6 @@ and take one step you will actually complete.`;
                 <div className="h-4 w-28 animate-pulse rounded-full bg-[#e8dfd0]" />
                 <div className="h-14 w-3/4 animate-pulse rounded-2xl bg-[#eee6d9]" />
               </div>
-
               <div className="space-y-4">
                 <div className="h-4 w-full animate-pulse rounded-full bg-[#eee6d9]" />
                 <div className="h-4 w-11/12 animate-pulse rounded-full bg-[#eee6d9]" />
@@ -331,17 +302,14 @@ and take one step you will actually complete.`;
               <p className="text-sm uppercase tracking-[0.22em] text-[#d6b24f]">
                 Access blocked
               </p>
-
               <div className="space-y-5">
                 <h1 className="max-w-2xl text-4xl font-semibold leading-tight tracking-[-0.04em] text-white sm:text-5xl">
                   This pathway cannot be entered from here.
                 </h1>
-
                 <p className="max-w-xl text-[1.08rem] leading-9 text-white/80">
                   {error}
                 </p>
               </div>
-
               <Link
                 href="/return"
                 className="inline-flex min-h-[52px] items-center rounded-full bg-[#b2955b] px-7 py-3 text-sm font-medium tracking-[0.04em] text-white transition hover:opacity-90"
@@ -355,12 +323,10 @@ and take one step you will actually complete.`;
                 <p className="text-sm uppercase tracking-[0.22em] text-[#d6b24f]">
                   Your pathway
                 </p>
-
                 <h1 className="max-w-2xl text-4xl font-semibold leading-tight tracking-[-0.04em] text-white sm:text-5xl">
                   {pathwayLabel}
                 </h1>
               </div>
-
               <div className="space-y-6">
                 <p className="max-w-xl text-[1.08rem] leading-9 text-white/85">
                   You named where you are:{' '}
@@ -369,7 +335,6 @@ and take one step you will actually complete.`;
                   </span>
                   .
                 </p>
-
                 <p className="max-w-xl text-[1.08rem] leading-9 text-white/85">
                   <span className="font-medium text-[#d7ba7d]">
                     What surfaced:
@@ -377,12 +342,10 @@ and take one step you will actually complete.`;
                   {formatResponseLabel(responseLabel)}
                 </p>
               </div>
-
               <div className="max-w-xl space-y-5">
                 <p className="text-sm uppercase tracking-[0.18em] text-white/45">
                   Your next instruction
                 </p>
-
                 <div className="space-y-5">
                   {nextInstruction
                     .split('\n')
@@ -397,7 +360,6 @@ and take one step you will actually complete.`;
                     ))}
                 </div>
               </div>
-
               <div className="pt-6">
                 <Link
                   href={nextHref}
@@ -414,7 +376,6 @@ and take one step you will actually complete.`;
   );
 }
 
-// Default export — wraps PathwayInner in Suspense for useSearchParams
 export default function PathwayContent() {
   return (
     <Suspense fallback={null}>

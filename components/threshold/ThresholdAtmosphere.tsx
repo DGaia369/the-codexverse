@@ -15,7 +15,7 @@ export default function ThresholdAtmosphere() {
           <div className="pt-8">
             
               <a
-              href="/begin"
+              href="/enter"
               className="text-sm tracking-[0.2em] text-[#f3dfaa] border-b border-[#d7ba7d]/30 pb-1 hover:border-[#d7ba7d]/80 transition-all duration-300"
             >
               Shall we begin
