@@ -117,43 +117,48 @@ export default function BeginPage() {
       return;
     }
 
-    if (currentIndex < screens.length - 1) {
-      setVisible(false);
-      setTimeout(() => {
-        setCurrentIndex((i) => i + 1);
-        setVisible(true);
-        setLocked(false);
-      }, 700);
-    } else {
-      const supabase = createClient();
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
+    if (screens.length === 0) {
+  window.location.reload();
+  return;
+}
 
-      await supabase.from('loops').insert({
-        user_id: user.id,
-        pathway: 'return_to_self',
-        status: 'active',
-        session_id: user.id,
-      });
+if (currentIndex < screens.length - 1) {
+  setVisible(false);
+  setTimeout(() => {
+    setCurrentIndex((i) => i + 1);
+    setVisible(true);
+    setLocked(false);
+  }, 700);
+} else {
+  const supabase = createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return;
 
-      await supabase.from('participant_flows').insert({
-        session_id: user.id,
-        user_id: user.id,
-        flow_number: flowNumber,
-      });
+  await supabase.from('loops').insert({
+    user_id: user.id,
+    pathway: 'return_to_self',
+    status: 'active',
+    session_id: user.id,
+  });
 
-      await supabase.from('returns').insert({
-        session_id: user.id,
-        user_id: user.id,
-        door: 'return_to_self',
-        pathway: 'return_to_self',
-        response_category: 'general',
-        next_instruction: null,
-        status: 'active',
-      });
+  await supabase.from('participant_flows').insert({
+    session_id: user.id,
+    user_id: user.id,
+    flow_number: flowNumber,
+  });
 
-      window.location.href = `/pathway/return-to-self?session_id=${encodeURIComponent(user.id)}`;
-    }
+  await supabase.from('returns').insert({
+    session_id: user.id,
+    user_id: user.id,
+    door: 'return_to_self',
+    pathway: 'return_to_self',
+    response_category: 'general',
+    next_instruction: null,
+    status: 'active',
+  });
+
+  window.location.href = `/pathway/return-to-self?session_id=${encodeURIComponent(user.id)}`;
+}
   }
 
   if (loading) {

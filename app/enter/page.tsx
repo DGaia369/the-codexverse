@@ -9,7 +9,6 @@ export default function EnterPage() {
   const [urlError, setUrlError] = useState('');
   const [email, setEmail] = useState('');
   const [code, setCode] = useState('');
-  const [token, setToken] = useState('');
   const [stage, setStage] = useState<Stage>('capture');
   const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
@@ -56,15 +55,9 @@ export default function EnterPage() {
 
   async function handleVerify() {
     const clean = code.trim();
-     const cleanToken = token.trim();
 
     if (clean.length < 6) {
       setError('Enter the full code from your email.');
-      return;
-    }
-
-     if (!cleanToken) {
-      setError('Enter the code that was sent to you.');
       return;
     }
 
@@ -78,6 +71,8 @@ export default function EnterPage() {
       token: clean,
       type: 'email',
     });
+
+    console.log('verify result:', verifyError);
 
     if (verifyError) {
       console.error('Supabase verify error:', verifyError);
