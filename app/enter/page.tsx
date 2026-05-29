@@ -3,11 +3,13 @@
 import { useState, useEffect } from 'react';
 import { createClient } from '@/utils/supabase/client';
 
-type Stage = 'capture' | 'sent';
+type Stage = 'capture' | 'sent' | 'verify';
 
 export default function EnterPage() {
   const [urlError, setUrlError] = useState('');
   const [email, setEmail] = useState('');
+  const [code, setCode] = useState('');
+  const [token, setToken] = useState('');
   const [stage, setStage] = useState<Stage>('capture');
   const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
@@ -37,12 +39,12 @@ export default function EnterPage() {
     const { error: authError } = await supabase.auth.signInWithOtp({
       email: clean,
       options: {
-        emailRedirectTo: `${window.location.origin}/auth/callback`,
+        shouldCreateUser: true,
       },
     });
 
     if (authError) {
-      console.error('Supabase magic link error:', authError);
+      console.error('Supabase OTP error:', authError);
       setError(authError.message || 'Something did not go through. Try once more.');
       setSubmitting(false);
       return;
@@ -50,6 +52,41 @@ export default function EnterPage() {
 
     setStage('sent');
     setSubmitting(false);
+  }
+
+  async function handleVerify() {
+    const clean = code.trim();
+     const cleanToken = token.trim();
+
+    if (clean.length < 6) {
+      setError('Enter the full code from your email.');
+      return;
+    }
+
+     if (!cleanToken) {
+      setError('Enter the code that was sent to you.');
+      return;
+    }
+
+    setSubmitting(true);
+    setError('');
+
+    const supabase = createClient();
+
+    const { error: verifyError } = await supabase.auth.verifyOtp({
+      email: email.trim(),
+      token: clean,
+      type: 'email',
+    });
+
+    if (verifyError) {
+      console.error('Supabase verify error:', verifyError);
+      setError('That code did not work. Check it and try again.');
+      setSubmitting(false);
+      return;
+    }
+
+    window.location.href = '/begin';
   }
 
   return (
@@ -69,9 +106,9 @@ export default function EnterPage() {
                 leave your name in the room.
               </p>
               <p className="text-sm leading-7 text-white/40">
-                A link will be sent to you.
+                A code will be sent to you.
                 <br />
-                Click it and you will arrive here — as yourself.
+                Return with it and you will arrive here — as yourself.
               </p>
             </div>
 
@@ -110,23 +147,72 @@ export default function EnterPage() {
         )}
 
         {stage === 'sent' && (
-          <div className="space-y-8">
+          <div className="space-y-10">
             <div className="space-y-5">
               <p className="text-2xl font-light leading-10 text-white/90">
                 The door is open.
               </p>
               <p className="text-base leading-8 text-white/50">
-                A link is on its way to you.
+                A code is on its way to you.
                 <br /><br />
-                When it arrives, click it.
-                <br />
-                You will land exactly where you are meant to be.
+                When it arrives, bring it back here.
               </p>
               <p className="text-sm leading-7 text-white/25 italic">
                 No password. No account to manage.
                 <br />
                 Just you, returning.
               </p>
+            </div>
+
+            <button
+              onClick={() => setStage('verify')}
+              className="text-sm text-[#f3dfaa] tracking-[0.2em] border-b border-[#d7ba7d]/30 pb-1 hover:border-[#d7ba7d]/80 transition-all duration-300 bg-transparent"
+            >
+              I have my code
+            </button>
+          </div>
+        )}
+
+        {stage === 'verify' && (
+          <div className="space-y-10">
+            <div className="space-y-5">
+              <p className="text-2xl font-light leading-10 text-white/90">
+                You came back.
+              </p>
+              <p className="text-sm leading-7 text-white/40">
+                Enter the code from your email.
+                <br />
+                You are almost inside.
+              </p>
+            </div>
+
+            <div className="space-y-4">
+              <input
+                type="text"
+                value={code}
+                onChange={(e) => {
+                  setCode(e.target.value);
+                  setError('');
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') handleVerify();
+                }}
+                placeholder="your code"
+                maxLength={8}
+                className="w-full bg-transparent border-b border-white/20 py-3 text-base text-white/90 placeholder:text-white/25 focus:outline-none focus:border-[#d7ba7d]/60 transition-colors duration-300 tracking-widest"
+              />
+
+              {error && (
+                <p className="text-sm text-[#d7ba7d]/60 italic">{error}</p>
+              )}
+
+              <button
+                onClick={handleVerify}
+                disabled={submitting}
+                className="mt-4 text-sm text-[#f3dfaa] tracking-[0.2em] border-b border-[#d7ba7d]/30 pb-1 hover:border-[#d7ba7d]/80 transition-all duration-300 bg-transparent disabled:opacity-40"
+              >
+                {submitting ? 'entering...' : 'enter'}
+              </button>
             </div>
           </div>
         )}
