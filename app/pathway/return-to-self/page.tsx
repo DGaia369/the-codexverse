@@ -1,4 +1,5 @@
 import { createServerSupabaseClient } from "@/utils/supabase/server";
+import CountdownTimer from '@/components/threshold/CountdownTimer';
 
 type ReturnToSelfPageProps = {
   searchParams?: Promise<{
@@ -150,19 +151,26 @@ export default async function ReturnToSelfPage({
     return <AccessBlocked message="Pathway access mismatch." />;
   }
 
-  const unlockAt = row.activation_unlock_at;
-  const isCompleted = row.activation_completed === true;
+  let unlockAt = row.activation_unlock_at;
+const isCompleted = row.activation_completed === true;
 
-  if (unlockAt && !isCompleted) {
-    const unlockTime = new Date(unlockAt).getTime();
-    const now = Date.now();
+if (!unlockAt && !isCompleted) {
+  const newUnlockAt = new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString();
+  await supabase
+    .from('returns')
+    .update({ activation_unlock_at: newUnlockAt })
+    .eq('session_id', sessionId);
+  unlockAt = newUnlockAt;
+}
 
-    if (!Number.isNaN(unlockTime) && now < unlockTime) {
-      return (
-        <AccessBlocked message="Go live the commitment first. This will be waiting for you when you return." />
-      );
-    }
+if (unlockAt && !isCompleted) {
+  const unlockTime = new Date(unlockAt).getTime();
+  const now = Date.now();
+
+  if (!Number.isNaN(unlockTime) && now < unlockTime) {
+    // do not block — let them see the page with the countdown
   }
+}
 
   const encounter = pickFrom(encounters);
   const activation = pickFrom(activations);
@@ -230,7 +238,7 @@ export default async function ReturnToSelfPage({
     This is where self-trust begins to rebuild.
   </p>
 
-  {isCompleted || (unlockAt && Date.now() >= new Date(unlockAt).getTime()) ? (
+     {isCompleted || (unlockAt && Date.now() >= new Date(unlockAt).getTime()) ? (
     
       <a
       href={`/return?session_id=${encodeURIComponent(sessionId)}`}
@@ -246,14 +254,15 @@ export default async function ReturnToSelfPage({
     That is not nothing.
     <br />
     That is the work beginning.
-  </p>
-  <p className="text-white/30 text-sm leading-8">
-    Go live the commitment first.
-    <br />
-    This space will hold everything you just encountered.
-    <br />
-    Return in 2 hours. Not tomorrow. Today.
-  </p>
+   </p>
+   <p className="text-white/30 text-sm leading-8">
+   Go live the commitment first.
+   <br />
+   This space will hold everything you just encountered.
+   </p>
+   {unlockAt && (
+  <CountdownTimer unlockAt={unlockAt} />
+)}
   <p className="text-white/20 text-xs leading-7 italic">
     The door does not close. It waits.
   </p>
