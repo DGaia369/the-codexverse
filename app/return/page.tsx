@@ -19,7 +19,7 @@ const returnMessages = [
   },
   {
     headline: "The person you have been performing for",
-    body: "does not live here.\nWhat you just did — you did for yourself.\nWhen is the last time you did something only for yourself?",
+    body: "does not live here.\nWhat you just did, you did for yourself.\nWhen is the last time you did something only for yourself?",
   },
   {
     headline: "You did not abandon yourself today.",
@@ -49,7 +49,7 @@ const integrateScreen3Pool = [
   `You have been so loyal to everyone who was never loyal to you.\n\nImagine what becomes possible when you turn that loyalty inward.`,
   `The life you have been waiting for permission to live is yours.\n\nIt always was.`,
   `Every time you came back to yourself today you broke a pattern that has run your life longer than you know.\n\nThat is what today was.\n\nA break in the pattern.`,
-  `You are not doing this for who you might become.\n\nYou are doing this for who you already are.\n\nShe has been here the whole time.\n\nWaiting.`,
+  `You are not doing this for who you might become.\n\nYou are doing this for who you already are.\n\nThat part of you has been here the whole time.\n\nWaiting.`,
   `You will forget this moment.\n\nLife will come back in and the noise will return and some part of you will try to make this smaller than it was.\n\nRemember it was not small.\n\nRemember you chose yourself.\n\nRemember that was everything.`,
 ];
 
@@ -390,7 +390,7 @@ export default function ReturnPage() {
                   Even when the feeling changes.
                 </p>
                 <p className="text-white/60 text-base leading-8 italic whitespace-pre-line">
-                  {`If something in you is not ready to stop here,\nthere is more.\nBecause you are worth continuing.`}
+                  {`If something in you is not ready to stop here,\nthere is more.`}
                 </p>
                 
                   <a

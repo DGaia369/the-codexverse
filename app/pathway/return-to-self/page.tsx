@@ -154,11 +154,15 @@ export default async function ReturnToSelfPage({
   let unlockAt = row.activation_unlock_at;
 const isCompleted = row.activation_completed === true;
 
+const encounter = pickFrom(encounters);
 if (!unlockAt && !isCompleted) {
   const newUnlockAt = new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString();
   await supabase
     .from('returns')
-    .update({ activation_unlock_at: newUnlockAt })
+    .update({ 
+      activation_unlock_at: newUnlockAt,
+      encounter_question: encounter,
+    })
     .eq('session_id', sessionId);
   unlockAt = newUnlockAt;
 }
@@ -172,8 +176,7 @@ if (unlockAt && !isCompleted) {
   }
 }
 
-  const encounter = pickFrom(encounters);
-  const activation = pickFrom(activations);
+    const activation = pickFrom(activations);
 
   return (
     <main className="min-h-screen bg-black text-white px-6 py-20">

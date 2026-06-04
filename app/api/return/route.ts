@@ -7,6 +7,7 @@ import {
 } from "@/utils/flow";
 
 import { sendReturnNotification } from "@/utils/email";
+import { sendPostEncounterEmail } from "@/utils/resend";
 
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
@@ -145,6 +146,16 @@ console.log("COLUMN TEST RESULT:", columnTest);
     } catch (emailError) {
       console.error("Email notification error:", emailError);
     }
+
+     try {
+  const result = await sendPostEncounterEmail({
+    email,
+    q5NonNegotiable,
+    });
+  console.log("Post-encounter email result:", JSON.stringify(result));
+    } catch (postEncounterError) {
+  console.error("Post-encounter email error:", postEncounterError);
+  }
 
     return NextResponse.json({
       ok: true,

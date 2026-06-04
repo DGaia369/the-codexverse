@@ -13,10 +13,9 @@ export default function CountdownTimer({ unlockAt }: { unlockAt: string }) {
       const diff = unlock - now;
 
       if (diff <= 0) {
-        setUnlocked(true);
-        setTimeLeft('');
-        return;
-      }
+      window.location.reload();
+      return;
+   }
 
       const hours = Math.floor(diff / (1000 * 60 * 60));
       const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
