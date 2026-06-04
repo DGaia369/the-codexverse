@@ -53,9 +53,9 @@ export async function sendReturnNotification(input: ReturnNotificationInput) {
     },
   });
 
-  const subject = `New CodeXverse Return | ${door} | ${pathway}`;
+  const subject = `New the codeXverse™ Return | ${door} | ${pathway}`;
 
-const text = `
+  const text = `
 A new return has been submitted.
 
 Session ID: ${session_id}
@@ -86,5 +86,17 @@ ${q4TruthRevealed}
 ${q5NonNegotiable}
 `.trim();
 
-  return { ok: true };
+  try {
+    await transporter.sendMail({
+      from,
+      to,
+      subject,
+      text,
+    });
+    console.log("Internal notification sent successfully.");
+    return { ok: true };
+  } catch (err) {
+    console.error("Internal notification send error:", err);
+    return { ok: false, error: err };
+  }
 }
