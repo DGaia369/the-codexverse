@@ -78,10 +78,21 @@ export async function sendPostEncounterEmail({
   const framing = pickFrom(framingPool);
   const question = pickFrom(questionPool);
 
+  const fs = await import('fs');
+  const path = await import('path');
+  const declarationPath = path.join(process.cwd(), 'public', 'declaration.pdf');
+  const declarationBuffer = fs.readFileSync(declarationPath);
+
   const { error } = await resend.emails.send({
     from: 'the codeXverse™ <no-reply@thecodexverse.com>',
     to: email,
     subject: 'Something real just happened.',
+    attachments: [
+      {
+        filename: 'I Choose Me the Declaration.pdf',
+        content: declarationBuffer,
+      },
+    ],
     html: `
       <div style="background-color:#000000;padding:48px 32px;font-family:Georgia,serif;max-width:480px;margin:0 auto;">
 
@@ -98,6 +109,14 @@ export async function sendPostEncounterEmail({
         </p>
 
         ${question}
+
+        <p style="color:rgba(255,255,255,0.85);font-size:17px;font-weight:300;line-height:1.9;margin:0 0 16px 0;">
+          Your first inheritance from the codeXverse™ is attached.
+        </p>
+
+        <p style="color:rgba(255,255,255,0.85);font-size:17px;font-weight:300;line-height:1.9;margin:0 0 40px 0;">
+          Move through it at the pace your nervous system asks for. Nothing here needs to be rushed.
+        </p>
 
         <p style="color:rgba(255,255,255,0.25);font-size:13px;line-height:1.8;margin:0 0 8px 0;font-style:italic;">
           The door does not close. It waits.

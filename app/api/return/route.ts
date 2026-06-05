@@ -1,181 +1,293 @@
-import {
-  classifyResponse,
-  determineAction,
-  determineDoor,
-  determinePathway,
-  buildNextInstruction,
-} from "@/utils/flow";
+import { Resend } from 'resend';
 
-import { sendReturnNotification } from "@/utils/email";
-import { sendPostEncounterEmail } from "@/utils/resend";
+const resend = new Resend(process.env.RESEND_API_KEY);
 
-import { NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
+// --- Randomization Pools ---
 
-export async function POST(req: Request) {
-  try {
-    const body = await req.json();
-    console.log("Incoming data:", body);
+const openingPool = [
+  `<p style="color:rgba(255,255,255,0.85);font-size:17px;font-weight:300;line-height:1.9;margin:0 0 24px 0;">You just sat with a question most people spend their whole lives avoiding.</p>
+   <p style="color:rgba(255,255,255,0.85);font-size:17px;font-weight:300;line-height:1.9;margin:0 0 24px 0;">You did not look away.</p>
+   <p style="color:rgba(255,255,255,0.85);font-size:17px;font-weight:300;line-height:1.9;margin:0 0 40px 0;">That is not nothing.</p>`,
 
-    const {
-      q1Completed,
-      q2Resistance,
-      q3Changed,
-      q4TruthRevealed,
-      q5NonNegotiable,
-      email,
-      user_id,
-    } = body;
+  `<p style="color:rgba(255,255,255,0.85);font-size:17px;font-weight:300;line-height:1.9;margin:0 0 24px 0;">You have been moving past this for a long time.</p>
+   <p style="color:rgba(255,255,255,0.85);font-size:17px;font-weight:300;line-height:1.9;margin:0 0 24px 0;">Not because you did not feel it. Because stopping felt like something you could not afford.</p>
+   <p style="color:rgba(255,255,255,0.85);font-size:17px;font-weight:300;line-height:1.9;margin:0 0 40px 0;">Today you stopped anyway. That is not a small thing. That is the beginning of something.</p>`,
 
-    const session_id = crypto.randomUUID();
+  `<p style="color:rgba(255,255,255,0.85);font-size:17px;font-weight:300;line-height:1.9;margin:0 0 24px 0;">There is a version of today where you felt the pull of this and kept going.</p>
+   <p style="color:rgba(255,255,255,0.85);font-size:17px;font-weight:300;line-height:1.9;margin:0 0 24px 0;">Where you told yourself later, maybe later.</p>
+   <p style="color:rgba(255,255,255,0.85);font-size:17px;font-weight:300;line-height:1.9;margin:0 0 24px 0;">That did not happen.</p>
+   <p style="color:rgba(255,255,255,0.85);font-size:17px;font-weight:300;line-height:1.9;margin:0 0 40px 0;">You stopped. You sat with it. You looked at it directly. The part of you that has been waiting for that, noticed.</p>`,
 
-    const response_category = classifyResponse({
-      q1: q1Completed,
-      q2: q2Resistance,
-      q3: q3Changed,
-      q4: q4TruthRevealed,
-      q5: q5NonNegotiable,
-      door: "unknown",
-      pathway: "unknown",
-    });
+  `<p style="color:rgba(255,255,255,0.85);font-size:17px;font-weight:300;line-height:1.9;margin:0 0 24px 0;">You did not arrive here by accident.</p>
+   <p style="color:rgba(255,255,255,0.85);font-size:17px;font-weight:300;line-height:1.9;margin:0 0 24px 0;">Something in you has been pointing here for longer than today. You finally followed it.</p>
+   <p style="color:rgba(255,255,255,0.85);font-size:17px;font-weight:300;line-height:1.9;margin:0 0 40px 0;">What it cost you to follow it, only you know. What it means that you did, you are only beginning to understand.</p>`,
 
-    const action_type = determineAction(response_category);
+  `<p style="color:rgba(255,255,255,0.85);font-size:17px;font-weight:300;line-height:1.9;margin:0 0 24px 0;">Most people spend their whole lives one step away from this conversation.</p>
+   <p style="color:rgba(255,255,255,0.85);font-size:17px;font-weight:300;line-height:1.9;margin:0 0 24px 0;">Not because they are unwilling. Because no one ever created the conditions where it felt safe enough to begin.</p>
+   <p style="color:rgba(255,255,255,0.85);font-size:17px;font-weight:300;line-height:1.9;margin:0 0 40px 0;">You began. That is everything.</p>`,
+];
 
-  const door = determineDoor(response_category);
+const framingPool = [
+  `<p style="color:rgba(255,255,255,0.5);font-size:14px;line-height:1.8;margin:0 0 16px 0;">You said something is now non-negotiable for you.</p>
+   <p style="color:rgba(255,255,255,0.5);font-size:14px;line-height:1.8;margin:0 0 16px 0;">That word is not a small word. It means: this is where I stop trading myself away.</p>`,
 
-  let pathway: string;
+  `<p style="color:rgba(255,255,255,0.5);font-size:14px;line-height:1.8;margin:0 0 16px 0;">You left here carrying something you did not have when you arrived.</p>
+   <p style="color:rgba(255,255,255,0.5);font-size:14px;line-height:1.8;margin:0 0 16px 0;">Not information. Not a framework. Not someone else's words about your life.</p>
+   <p style="color:rgba(255,255,255,0.5);font-size:14px;line-height:1.8;margin:0 0 16px 0;">Your own words. About your own truth. That belongs to you now. Permanently.</p>`,
 
-if (response_category === "needs_support") {
-  pathway = "guided-support";
-} else if (response_category === "needs_clarity") {
-  pathway = "rebuild_foundation";
-} else if (response_category === "ready_for_next_step") {
-const options = ["next_step", "rise_gently", "restore_rhythm"];
-pathway = options[Math.floor(Math.random() * options.length)];
-} else {
-  pathway = "self_directed";
+  `<p style="color:rgba(255,255,255,0.5);font-size:14px;line-height:1.8;margin:0 0 16px 0;">Before you walked back into your life, something in you named what it is no longer willing to give up.</p>
+   <p style="color:rgba(255,255,255,0.5);font-size:14px;line-height:1.8;margin:0 0 16px 0;">That naming was not performance. It was recognition.</p>
+   <p style="color:rgba(255,255,255,0.5);font-size:14px;line-height:1.8;margin:0 0 16px 0;">And recognition, once it happens, does not unhappen.</p>`,
+
+  `<p style="color:rgba(255,255,255,0.5);font-size:14px;line-height:1.8;margin:0 0 16px 0;">You named what you are no longer available to negotiate away.</p>
+   <p style="color:rgba(255,255,255,0.5);font-size:14px;line-height:1.8;margin:0 0 16px 0;">That is not a commitment to be perfect. It is a decision to notice when you are leaving yourself, and to come back.</p>
+   <p style="color:rgba(255,255,255,0.5);font-size:14px;line-height:1.8;margin:0 0 16px 0;">The coming back is the practice. The practice is the change.</p>`,
+];
+
+const questionPool = [
+  `<p style="color:rgba(255,255,255,0.85);font-size:17px;font-weight:300;line-height:1.9;margin:0 0 16px 0;">One question to carry with you:</p>
+   <p style="color:rgba(255,255,255,0.85);font-size:18px;font-style:italic;line-height:1.9;margin:0 0 48px 0;">What would it mean to actually keep the commitment you just made to yourself?</p>`,
+
+  `<p style="color:rgba(255,255,255,0.85);font-size:17px;font-weight:300;line-height:1.9;margin:0 0 16px 0;">One question to carry with you:</p>
+   <p style="color:rgba(255,255,255,0.85);font-size:18px;font-style:italic;line-height:1.9;margin:0 0 48px 0;">Where in your life has this non-negotiable already been costing you, quietly, without a name? Now it has a name. What changes?</p>`,
+
+  `<p style="color:rgba(255,255,255,0.85);font-size:17px;font-weight:300;line-height:1.9;margin:0 0 16px 0;">One question to carry with you:</p>
+   <p style="color:rgba(255,255,255,0.85);font-size:18px;font-style:italic;line-height:1.9;margin:0 0 48px 0;">The person who wrote that commitment knows something. What is she asking you to do differently, starting today, not eventually?</p>`,
+
+  `<p style="color:rgba(255,255,255,0.85);font-size:17px;font-weight:300;line-height:1.9;margin:0 0 16px 0;">One question to carry with you:</p>
+   <p style="color:rgba(255,255,255,0.85);font-size:18px;font-style:italic;line-height:1.9;margin:0 0 48px 0;">You have honored everyone else's non-negotiables for a long time. What would it look like to honor your own with the same consistency? Not perfectly. Honestly.</p>`,
+
+  `<p style="color:rgba(255,255,255,0.85);font-size:17px;font-weight:300;line-height:1.9;margin:0 0 16px 0;">One question to carry with you:</p>
+   <p style="color:rgba(255,255,255,0.85);font-size:18px;font-style:italic;line-height:1.9;margin:0 0 48px 0;">What has abandoning this cost you? Not to grieve it. To finally see it clearly enough to stop paying that cost.</p>`,
+];
+
+function pickFrom<T>(pool: T[]): T {
+  return pool[Math.floor(Math.random() * pool.length)];
 }
 
-    const next_instruction = buildNextInstruction({
-      door,
-      pathway,
-      response_category,
-    });
+// --- Email 1: Same Day ---
 
-    const now = new Date();
-    const unlockAt = new Date(now.getTime() + 2 * 60 * 60 * 1000); // +2 hours
+export async function sendPostEncounterEmail({
+  email,
+  q5NonNegotiable,
+}: {
+  email: string;
+  q5NonNegotiable: string;
+}) {
+  const opening = pickFrom(openingPool);
+  const framing = pickFrom(framingPool);
+  const question = pickFrom(questionPool);
 
-    const status = "submitted";
+  const fs = await import('fs');
+  const path = await import('path');
+  const declarationPath = path.join(process.cwd(), 'public', 'declaration.pdf');
+  const declarationBuffer = fs.readFileSync(declarationPath);
 
-    console.log("Computed ACT values:", {
-      response_category,
-      next_instruction,
-      action_type,
-      door,
-      pathway,
-      status,
-      session_id,
-    });
-
-    const supabase = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!
-    );
-
-    console.log("TESTING COLUMN ACCESS");
-
-const columnTest = await supabase
-  .from("returns")
-  .select("activation_committed")
-  .limit(1);
-
-console.log("COLUMN TEST RESULT:", columnTest);
-
-    const { data, error } = await supabase.from("returns").insert([
+  const { error } = await resend.emails.send({
+    from: 'the codeXverse™ <no-reply@thecodexverse.com>',
+    to: email,
+    subject: 'Something real just happened.',
+    attachments: [
       {
-        q1_completed: q1Completed,
-        q2_resistance: q2Resistance,
-        q3_changed: q3Changed,
-        q4_truth_revealed: q4TruthRevealed,
-        q5_non_negotiable: q5NonNegotiable,
-        email,
-        action_type,
-        door,
-        pathway,
-        status,
-        session_id,
-        response_category,
-        next_instruction,
-
-  activation_committed: true,
-  activation_committed_at: now.toISOString(),
-  activation_unlock_at: unlockAt.toISOString(),
-  activation_completed: false,
-  user_id: user_id || null,
+        filename: 'I Choose Me the Declaration.pdf',
+        content: declarationBuffer,
       },
-    ]);
+    ],
+    html: `
+      <div style="background-color:#000000;padding:48px 32px;font-family:Georgia,serif;max-width:480px;margin:0 auto;">
 
-    if (error) {
-      console.error("API Supabase insert error:", error);
-      return NextResponse.json(
-        {
-          ok: false,
-          error: error.message,
-          details: error.details,
-          hint: error.hint,
-        },
-        { status: 500 }
-      );
-    }
+        <p style="color:#d7ba7d;font-size:11px;letter-spacing:0.3em;margin:0 0 40px 0;">
+          the codeXverse™
+        </p>
 
-        try {
-      await sendReturnNotification({
-        email,
-        q1Completed,
-        q2Resistance,
-        q3Changed,
-        q4TruthRevealed,
-        q5NonNegotiable,
-        response_category,
-        action_type,
-        door,
-        pathway,
-        next_instruction,
-        session_id,
-      });
-    } catch (emailError) {
-      console.error("Email notification error:", emailError);
-    }
+        ${opening}
 
-     try {
-  const result = await sendPostEncounterEmail({
-    email,
-    q5NonNegotiable,
-    });
-  console.log("Post-encounter email result:", JSON.stringify(result));
-    } catch (postEncounterError) {
-  console.error("Post-encounter email error:", postEncounterError);
+        ${framing}
+
+        <p style="color:#d7ba7d;font-size:16px;font-style:italic;line-height:1.8;margin:0 0 40px 0;padding-left:16px;border-left:2px solid rgba(215,186,125,0.3);">
+          "${q5NonNegotiable}"
+        </p>
+
+        ${question}
+
+        <p style="color:rgba(255,255,255,0.85);font-size:17px;font-weight:300;line-height:1.9;margin:0 0 16px 0;">
+          Your first inheritance from the codeXverse™ is attached.
+        </p>
+
+        <p style="color:rgba(255,255,255,0.85);font-size:17px;font-weight:300;line-height:1.9;margin:0 0 40px 0;">
+          Move through it at the pace your nervous system asks for. Nothing here needs to be rushed.
+        </p>
+
+        <p style="color:rgba(255,255,255,0.25);font-size:13px;line-height:1.8;margin:0 0 8px 0;font-style:italic;">
+          The door does not close. It waits.
+        </p>
+
+        <p style="color:rgba(255,255,255,0.15);font-size:11px;line-height:1.8;margin:48px 0 0 0;">
+          This is not therapy. It is not a substitute for professional support.<br/>
+          If you are in crisis, please reach out to a qualified professional.
+        </p>
+
+      </div>
+    `,
+  });
+
+  console.log("Resend raw response error:", error);
+  console.log("Resend API key present:", !!process.env.RESEND_API_KEY);
+  console.log("Sending to:", email);
+  console.log("q5 value received:", q5NonNegotiable);
+
+  if (error) {
+    console.error('Resend email error:', error);
+    return { ok: false, error };
   }
 
-    return NextResponse.json({
-      ok: true,
-      data,
-      routing: {
-        door,
-        pathway,
-        status,
-        session_id,
-        response_category,
-        next_instruction,
-        action_type,
-        activation_unlock_at: unlockAt.toISOString(),
-      },
-    });
-  } catch (err) {
-    console.error("API route error:", err);
-    return NextResponse.json(
-      { ok: false, error: "Server error" },
-      { status: 500 }
-    );
+  return { ok: true };
+}
+
+// --- Email 2: Day 3 ---
+
+export async function sendDayThreeEmail({
+  email,
+  q5NonNegotiable,
+  scheduledAt,
+}: {
+  email: string;
+  q5NonNegotiable: string;
+  scheduledAt: string;
+}) {
+  const { error } = await (resend.emails.send as Function)({
+    from: 'the codeXverse™ <no-reply@thecodexverse.com>',
+    to: email,
+    subject: 'Three days ago, something shifted.',
+    scheduledAt,
+    html: `
+      <div style="background-color:#000000;padding:48px 32px;font-family:Georgia,serif;max-width:480px;margin:0 auto;">
+
+        <p style="color:#d7ba7d;font-size:11px;letter-spacing:0.3em;margin:0 0 40px 0;">
+          the codeXverse™
+        </p>
+
+        <p style="color:rgba(255,255,255,0.85);font-size:17px;font-weight:300;line-height:1.9;margin:0 0 24px 0;">
+          Three days ago you sat with something most people keep moving past.
+        </p>
+
+        <p style="color:rgba(255,255,255,0.85);font-size:17px;font-weight:300;line-height:1.9;margin:0 0 40px 0;">
+          You named what is non-negotiable for you now.
+        </p>
+
+        <p style="color:#d7ba7d;font-size:16px;font-style:italic;line-height:1.8;margin:0 0 40px 0;padding-left:16px;border-left:2px solid rgba(215,186,125,0.3);">
+          "${q5NonNegotiable}"
+        </p>
+
+        <p style="color:rgba(255,255,255,0.85);font-size:17px;font-weight:300;line-height:1.9;margin:0 0 24px 0;">
+          That word does not expire. It does not need to be re-earned.
+        </p>
+
+        <p style="color:rgba(255,255,255,0.85);font-size:17px;font-weight:300;line-height:1.9;margin:0 0 40px 0;">
+          But it does need to be practiced. Not perfectly. Honestly.
+        </p>
+
+        <p style="color:rgba(255,255,255,0.85);font-size:17px;font-weight:300;line-height:1.9;margin:0 0 16px 0;">
+          One question for the next three days:
+        </p>
+
+        <p style="color:rgba(255,255,255,0.85);font-size:18px;font-style:italic;line-height:1.9;margin:0 0 48px 0;">
+          Where have you already honored it, even quietly, even imperfectly? That counts. Name it.
+        </p>
+
+        <p style="color:rgba(255,255,255,0.25);font-size:13px;line-height:1.8;margin:0 0 8px 0;font-style:italic;">
+          The door does not close. It waits.
+        </p>
+
+        <p style="color:rgba(255,255,255,0.15);font-size:11px;line-height:1.8;margin:48px 0 0 0;">
+          This is not therapy. It is not a substitute for professional support.<br/>
+          If you are in crisis, please reach out to a qualified professional.
+        </p>
+
+      </div>
+    `,
+  });
+
+  if (error) {
+    console.error('Resend day three email error:', error);
+    return { ok: false, error };
   }
+
+  return { ok: true };
+}
+
+// --- Email 3: Day 7 ---
+
+export async function sendDaySevenEmail({
+  email,
+  q5NonNegotiable,
+  scheduledAt,
+}: {
+  email: string;
+  q5NonNegotiable: string;
+  scheduledAt: string;
+}) {
+  const { error } = await (resend.emails.send as Function)({
+    from: 'the codeXverse™ <no-reply@thecodexverse.com>',
+    to: email,
+    subject: 'A week ago, you did not look away.',
+    scheduledAt,
+    html: `
+      <div style="background-color:#000000;padding:48px 32px;font-family:Georgia,serif;max-width:480px;margin:0 auto;">
+
+        <p style="color:#d7ba7d;font-size:11px;letter-spacing:0.3em;margin:0 0 40px 0;">
+          the codeXverse™
+        </p>
+
+        <p style="color:rgba(255,255,255,0.85);font-size:17px;font-weight:300;line-height:1.9;margin:0 0 24px 0;">
+          A week ago you encountered something true about yourself.
+        </p>
+
+        <p style="color:rgba(255,255,255,0.85);font-size:17px;font-weight:300;line-height:1.9;margin:0 0 40px 0;">
+          You are still carrying it. Even if it has been quiet. Even if life came back in and got loud again.
+        </p>
+
+        <p style="color:#d7ba7d;font-size:16px;font-style:italic;line-height:1.8;margin:0 0 40px 0;padding-left:16px;border-left:2px solid rgba(215,186,125,0.3);">
+          "${q5NonNegotiable}"
+        </p>
+
+        <p style="color:rgba(255,255,255,0.85);font-size:17px;font-weight:300;line-height:1.9;margin:0 0 24px 0;">
+          That did not disappear. It became part of what you know.
+        </p>
+
+        <p style="color:rgba(255,255,255,0.85);font-size:17px;font-weight:300;line-height:1.9;margin:0 0 40px 0;">
+          Once you see it, you cannot unsee it. That is not a warning. That is the promise.
+        </p>
+
+        <p style="color:rgba(255,255,255,0.85);font-size:17px;font-weight:300;line-height:1.9;margin:0 0 16px 0;">
+          If something in you is ready to go deeper, the next room is open.
+        </p>
+
+        <p style="color:rgba(255,255,255,0.85);font-size:17px;font-weight:300;line-height:1.9;margin:0 0 48px 0;">
+          Not because something essential was withheld here. Because recognition revealed there is more.
+        </p>
+
+        <a href="https://www.thecodexverse.com/begin" style="display:inline-block;color:#d7ba7d;font-size:13px;letter-spacing:0.2em;text-decoration:none;border:1px solid rgba(215,186,125,0.4);padding:12px 28px;">
+          RETURN TO THE THRESHOLD
+        </a>
+
+        <p style="color:rgba(255,255,255,0.25);font-size:13px;line-height:1.8;margin:48px 0 8px 0;font-style:italic;">
+          The door does not close. It waits.
+        </p>
+
+        <p style="color:rgba(255,255,255,0.15);font-size:11px;line-height:1.8;margin:48px 0 0 0;">
+          This is not therapy. It is not a substitute for professional support.<br/>
+          If you are in crisis, please reach out to a qualified professional.
+        </p>
+
+      </div>
+    `,
+  });
+
+  if (error) {
+    console.error('Resend day seven email error:', error);
+    return { ok: false, error };
+  }
+
+  return { ok: true };
 }
