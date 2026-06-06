@@ -81,17 +81,18 @@ export async function sendPostEncounterEmail({
   const fs = await import('fs');
   const path = await import('path');
   const declarationPath = path.join(process.cwd(), 'public', 'declaration.pdf');
-  const declarationBuffer = fs.readFileSync(declarationPath);
+  const declarationBuffer = fs.readFileSync(declarationPath).toString("base64");
 
   const { error } = await resend.emails.send({
     from: 'the codeXverse™ <no-reply@thecodexverse.com>',
     to: email,
     subject: 'Something real just happened.',
     attachments: [
-      {
-        filename: 'I Choose Me the Declaration.pdf',
-        content: declarationBuffer,
-      },
+  {
+    filename: "I Choose Me the Declaration.pdf",
+    content: declarationBuffer,
+  },
+
     ],
     html: `
       <div style="background-color:#000000;padding:48px 32px;font-family:Georgia,serif;max-width:480px;margin:0 auto;">
