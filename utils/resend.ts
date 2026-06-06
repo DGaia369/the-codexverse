@@ -81,8 +81,7 @@ export async function sendPostEncounterEmail({
   const fs = await import('fs');
   const path = await import('path');
   const declarationPath = path.join(process.cwd(), 'public', 'declaration.pdf');
-  const declarationBuffer = fs.readFileSync(declarationPath).toString("base64");
-
+ content: Buffer.from(declarationBuffer, 'base64'),
   const { error } = await resend.emails.send({
     from: 'the codeXverse™ <no-reply@thecodexverse.com>',
     to: email,
