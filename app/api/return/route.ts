@@ -1,9 +1,5 @@
 import { NextResponse } from "next/server";
-import {
-  sendPostEncounterEmail,
-  sendDayThreeEmail,
-  sendDaySevenEmail,
-} from "@/utils/resend";
+import { sendPostEncounterEmail } from "@/utils/resend";
 
 export async function POST(req: Request) {
   try {
@@ -19,26 +15,14 @@ export async function POST(req: Request) {
       );
     }
 
-        const emailOne = await sendPostEncounterEmail({
+    const emailOne = await sendPostEncounterEmail({
       email,
       q5NonNegotiable,
     });
 
-    const emailTwo = await sendDayThreeEmail({
-  email,
-  q5NonNegotiable,
-});
-
-    const emailThree = await sendDaySevenEmail({
-  email,
-  q5NonNegotiable,
-});
-
     return NextResponse.json({
       ok: true,
       emailOne,
-      emailTwo,
-      emailThree,
     });
   } catch (error) {
     console.error("Return route error:", error);
