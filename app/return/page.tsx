@@ -112,6 +112,7 @@ export default function ReturnPage() {
   const [integrateIndex, setIntegrateIndex] = useState(0);
   const [integrateVisible, setIntegrateVisible] = useState(true);
   const [lotusComplete, setLotusComplete] = useState(false);
+  const [returnSessionId, setReturnSessionId] = useState('');
 
   useEffect(() => {
     let isActive = true;
@@ -257,12 +258,19 @@ export default function ReturnPage() {
     }
   };
 
-  if (lockMessage) {
-    return (
+useEffect(() => {
+  const params = new URLSearchParams(window.location.search);
+  setReturnSessionId(params.get('session_id') ?? '');
+}, []);
+
+   const returnCompleteHref = `/return-complete?door=return_to_self&pathway=return_to_self&session_id=${encodeURIComponent(returnSessionId)}`;
+
+    if (lockMessage) {
+     return (
       <main className="min-h-screen bg-black text-white px-6 py-16 flex items-center animate-fadeIn">
         <div className="mx-auto max-w-2xl">
           <p className="mb-4 text-xs tracking-[0.3em] text-[#d7ba7d]">
-            the codeXverse™
+            the codeXverse
           </p>
           <h1 className="text-4xl font-serif">Not yet.</h1>
           <p className="mt-6 text-lg leading-8 text-white/75">{lockMessage}</p>
@@ -287,7 +295,7 @@ export default function ReturnPage() {
       <main className="min-h-screen bg-black text-white px-6 py-16 animate-fadeIn">
         <div className="mx-auto max-w-2xl">
           <p className="mb-4 text-xs tracking-[0.3em] text-[#d7ba7d]">
-            the codeXverse™
+            the codeXverse
           </p>
 
           {integrateIndex === 1 && !lotusComplete && (
@@ -394,18 +402,19 @@ export default function ReturnPage() {
                 </p>
                 
                   <a
-                  href="/"
+                  href={returnCompleteHref}
                   className="inline-block text-sm text-[#d7ba7d] tracking-[0.2em] border-b border-[#d7ba7d]/30 pb-1 hover:border-[#d7ba7d]/80 transition-all duration-300"
-                >
+                  >
                   I want to go deeper →
-                </a>
+                 </a>
                 <div className="pt-10">
                   
-                    <a
-                    href="/"
-                    className="inline-block rounded-full border border-white/20 px-5 py-2 text-sm hover:bg-white/10"
+                 <a
+                 href={returnCompleteHref}
+                  
+                  className="inline-block rounded-full border border-white/20 px-5 py-2 text-sm hover:bg-white/10"
                   >
-                    Return to the codeXverse™
+                  Return to the codeXverse
                   </a>
                 </div>
               </div>
@@ -420,7 +429,7 @@ export default function ReturnPage() {
     <main className="min-h-screen bg-black text-white px-6 py-16 animate-fadeIn">
       <div className="mx-auto max-w-2xl">
         <p className="mb-4 text-xs tracking-[0.3em] text-[#d7ba7d]">
-          the codeXverse™
+          the codeXverse
         </p>
         <h1 className="text-4xl font-serif">Return</h1>
         <p className="mt-6 text-[#d7ba7d]">Before you answer, tell the truth.</p>

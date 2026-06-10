@@ -123,7 +123,7 @@ export default async function DoorPage({ searchParams }: DoorPageProps) {
     <main className="min-h-screen bg-black text-white flex items-center justify-center px-6">
       <div className="max-w-xl w-full">
         <p className="text-xs tracking-[0.3em] text-[#d7ba7d] mb-12">
-          the codeXverse™
+          the codeXverse
         </p>
 
         <div className="space-y-5 text-lg leading-9 text-white/85 whitespace-pre-line">
@@ -132,16 +132,14 @@ export default async function DoorPage({ searchParams }: DoorPageProps) {
 
         <div className="mt-16">
           
-           <a 
-            href={`/pathway?door=${encodeURIComponent(
-              resolvedDoor
-            )}&pathway=${encodeURIComponent(
-              resolvedPathway
-            )}&session_id=${encodeURIComponent(session_id)}`}
+           <a
+            href={`/tier-2?from=door&door=${encodeURIComponent(
+            resolvedDoor
+            )}&pathway=the_agreement&session_id=${encodeURIComponent(session_id)}`}
             className="inline-block rounded-full border border-[#d7ba7d]/35 bg-[#d7ba7d]/10 px-7 py-3 text-sm font-medium text-[#f3dfaa] transition hover:border-[#d7ba7d]/80 hover:bg-[#d7ba7d]/18"
-          >
+           >
             I am ready to go deeper →
-          </a>
+            </a>
         </div>
       </div>
     </main>

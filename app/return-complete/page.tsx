@@ -25,7 +25,7 @@ export default async function ReturnCompletePage({
     <main className="min-h-screen bg-black text-white flex items-center">
       <div className="mx-auto max-w-2xl px-6">
         <p className="text-xs tracking-[0.3em] text-[#d7ba7d] mb-4">
-          the codeXverse™
+          the codeXverse
         </p>
 
         <h1 className="text-3xl md:text-5xl font-semibold leading-tight">

@@ -207,7 +207,7 @@ if (currentIndex < screens.length - 1) {
           ) : (
             <>
               <p className="text-xs tracking-[0.3em] text-[#d7ba7d] mb-16">
-                the codeXverse™
+                the codeXverse
               </p>
 
               <div className="space-y-5 text-xl leading-10 text-white/88 whitespace-pre-line font-light">
