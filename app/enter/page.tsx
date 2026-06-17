@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { createClient } from '@/utils/supabase/client';
 
 type Stage = 'capture' | 'sent' | 'verify';
@@ -16,6 +16,7 @@ export default function EnterPage() {
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const err = params.get('error');
+
     if (err === 'link_expired') {
       setUrlError('That link has expired. Enter your email and we will send a fresh one.');
     }
@@ -86,12 +87,20 @@ export default function EnterPage() {
 
   return (
     <main className="min-h-screen bg-black text-white flex items-center justify-center px-8">
+      <header className="fixed top-0 left-0 right-0 z-10">
+        <div className="mx-auto flex max-w-7xl items-center px-6 py-5 md:px-10">
+          <div>
+            <p className="text-sm tracking-[0.25em] text-[#d7ba7d]">
+              the codeXverse™
+            </p>
+            <p className="text-xs text-white/55">
+              Arrival
+            </p>
+          </div>
+        </div>
+      </header>
+
       <div className="max-w-md w-full space-y-12">
-
-        <p className="text-xs tracking-[0.3em] text-[#d7ba7d]">
-          the codeXverse™
-        </p>
-
         {stage === 'capture' && (
           <div className="space-y-10">
             <div className="space-y-5">
@@ -100,10 +109,11 @@ export default function EnterPage() {
                 <br />
                 leave your name in the room.
               </p>
+
               <p className="text-sm leading-7 text-white/40">
                 A code will be sent to you.
                 <br />
-                Return with it and you will arrive here — as yourself.
+                Return with it and you will arrive here, as yourself.
               </p>
             </div>
 
@@ -147,11 +157,14 @@ export default function EnterPage() {
               <p className="text-2xl font-light leading-10 text-white/90">
                 The door is open.
               </p>
+
               <p className="text-base leading-8 text-white/50">
                 A code is on its way to you.
-                <br /><br />
+                <br />
+                <br />
                 When it arrives, bring it back here.
               </p>
+
               <p className="text-sm leading-7 text-white/25 italic">
                 No password. No account to manage.
                 <br />
@@ -174,6 +187,7 @@ export default function EnterPage() {
               <p className="text-2xl font-light leading-10 text-white/90">
                 You came back.
               </p>
+
               <p className="text-sm leading-7 text-white/40">
                 Enter the code from your email.
                 <br />
@@ -211,7 +225,6 @@ export default function EnterPage() {
             </div>
           </div>
         )}
-
       </div>
     </main>
   );

@@ -12,7 +12,7 @@ export default function Home() {
               the codeXverse™
             </p>
             <p className="text-xs text-white/55">
-              Return to Self
+              Threshold
             </p>
           </div>
         </div>

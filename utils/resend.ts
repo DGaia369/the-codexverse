@@ -87,12 +87,12 @@ export async function sendPostEncounterEmail({
     from: 'the codeXverse™ <no-reply@thecodexverse.com>',
     to: email,
     subject: 'Something real just happened.',
-   attachments: [
-  {
-    filename: "I Choose Me the Declaration.pdf",
-    content: Buffer.from(declarationBuffer, 'base64'),
-  },
-],
+    attachments: [
+      {
+        filename: "I Choose Me the Declaration.pdf",
+        content: Buffer.from(declarationBuffer, 'base64'),
+      },
+    ],
     html: `
       <div style="background-color:#000000;padding:48px 32px;font-family:Georgia,serif;max-width:480px;margin:0 auto;">
 
@@ -145,14 +145,21 @@ export async function sendPostEncounterEmail({
 }
 
 // --- Email 2: Day 3 ---
+// Updated: accepts optional q1Completed for one personal acknowledgment line
 
 export async function sendDayThreeEmail({
   email,
   q5NonNegotiable,
+  q1Completed,
 }: {
   email: string;
   q5NonNegotiable: string;
+  q1Completed?: string;
 }) {
+  const personalLine = q1Completed && q1Completed.trim().length > 0
+    ? `<p style="color:rgba(255,255,255,0.85);font-size:17px;font-weight:300;line-height:1.9;margin:0 0 24px 0;">You said you completed something: <em>${q1Completed}</em>. That is evidence. Not performance. Evidence that when you said you would, you did.</p>`
+    : '';
+
   const { error } = await resend.emails.send({
     from: 'the codeXverse™ <no-reply@thecodexverse.com>',
     to: email,
@@ -175,6 +182,8 @@ export async function sendDayThreeEmail({
         <p style="color:#d7ba7d;font-size:16px;font-style:italic;line-height:1.8;margin:0 0 40px 0;padding-left:16px;border-left:2px solid rgba(215,186,125,0.3);">
           "${q5NonNegotiable}"
         </p>
+
+        ${personalLine}
 
         <p style="color:rgba(255,255,255,0.85);font-size:17px;font-weight:300;line-height:1.9;margin:0 0 24px 0;">
           That word does not expire. It does not need to be re-earned.
@@ -214,14 +223,21 @@ export async function sendDayThreeEmail({
 }
 
 // --- Email 3: Day 7 ---
+// Updated: accepts optional q3Changed for one personal acknowledgment line
 
 export async function sendDaySevenEmail({
   email,
   q5NonNegotiable,
+  q3Changed,
 }: {
   email: string;
   q5NonNegotiable: string;
+  q3Changed?: string;
 }) {
+  const personalLine = q3Changed && q3Changed.trim().length > 0
+    ? `<p style="color:rgba(255,255,255,0.85);font-size:17px;font-weight:300;line-height:1.9;margin:0 0 24px 0;">You said something changed: <em>${q3Changed}</em>. That is the Recognition Loop running. Something that was invisible became visible. That is the whole point.</p>`
+    : '';
+
   const { error } = await resend.emails.send({
     from: 'the codeXverse™ <no-reply@thecodexverse.com>',
     to: email,
@@ -244,6 +260,8 @@ export async function sendDaySevenEmail({
         <p style="color:#d7ba7d;font-size:16px;font-style:italic;line-height:1.8;margin:0 0 40px 0;padding-left:16px;border-left:2px solid rgba(215,186,125,0.3);">
           "${q5NonNegotiable}"
         </p>
+
+        ${personalLine}
 
         <p style="color:rgba(255,255,255,0.85);font-size:17px;font-weight:300;line-height:1.9;margin:0 0 24px 0;">
           That did not disappear. It became part of what you know.

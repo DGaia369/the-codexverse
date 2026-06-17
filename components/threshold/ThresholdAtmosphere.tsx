@@ -124,60 +124,56 @@ export default function ThresholdAtmosphere() {
           : null;
 
   return (
-  <section className="relative flex min-h-screen items-center bg-[#0a0a0f] px-6 py-24 text-white md:px-10">
-    <p className="fixed bottom-6 left-0 right-0 text-center text-xs text-white/20 leading-5 px-6 z-50">
-      This is not therapy. It is not a substitute for professional support.
-      If you are in crisis, please reach out to a qualified professional.
-    </p>
+    <section className="relative flex min-h-screen items-center bg-[#0a0a0f] px-6 py-24 text-white md:px-10">
+      <p className="fixed bottom-6 left-0 right-0 text-center text-xs text-white/20 leading-5 px-6 z-50">
+        This is not therapy. It is not a substitute for professional support.
+        If you are in crisis, please reach out to a qualified professional.
+      </p>
 
-    <div
-      className="mx-auto w-full max-w-5xl"
-      style={{
-        opacity: visible ? 1 : 0,
-        transform: visible ? 'translateY(0)' : 'translateY(12px)',
-        transition: 'opacity 0.7s ease, transform 0.7s ease',
-        pointerEvents: locked ? 'none' : 'auto',
-      }}
-    >
-      {phase === 'final' ? (
-        <div className="space-y-8">
-          <h1 className="font-serif text-4xl leading-tight md:text-6xl">
-            Something in you already knows.
-          </h1>
+      <div
+        className="mx-auto w-full max-w-5xl"
+        style={{
+          opacity: visible ? 1 : 0,
+          transform: visible ? 'translateY(0)' : 'translateY(12px)',
+          transition: 'opacity 0.7s ease, transform 0.7s ease',
+          pointerEvents: locked ? 'none' : 'auto',
+        }}
+      >
+        {phase === 'final' ? (
+          <div className="space-y-8">
+            <h1 className="font-serif text-4xl leading-tight md:text-6xl">
+              Something in you already knows.
+            </h1>
 
-          <p className="max-w-2xl text-lg leading-8 text-white/65 md:text-xl">
-            Not everything. Not the full answer. But enough to feel where
-            something has been off.
-          </p>
+            <p className="max-w-2xl text-lg leading-8 text-white/65 md:text-xl">
+              Not everything. Not the full answer. But enough to feel where
+              something has been off.
+            </p>
 
-          <div className="pt-8">
-            <a
-              href="/enter"
-              className="text-sm tracking-[0.2em] text-[#f3dfaa] border-b border-[#d7ba7d]/30 pb-1 hover:border-[#d7ba7d]/80 transition-all duration-300"
+            <div className="pt-8">
+              <a
+                href="/enter"
+                className="text-sm tracking-[0.2em] text-[#f3dfaa] border-b border-[#d7ba7d]/30 pb-1 hover:border-[#d7ba7d]/80 transition-all duration-300"
+              >
+                Shall we begin
+              </a>
+            </div>
+          </div>
+        ) : (
+          <>
+            <div className="space-y-5 whitespace-pre-line text-xl font-light leading-10 text-white/88">
+              {currentContent}
+            </div>
+
+            <button
+              onClick={advance}
+              className="mt-16 border-b border-[#d7ba7d]/30 bg-transparent pb-1 text-sm tracking-[0.2em] text-[#f3dfaa] transition-all duration-300 hover:border-[#d7ba7d]/80"
             >
-              Shall we begin
-            </a>
-          </div>
-        </div>
-      ) : (
-        <>
-          <p className="mb-16 text-xs tracking-[0.3em] text-[#d7ba7d]">
-            the codeXverse
-          </p>
-
-          <div className="space-y-5 whitespace-pre-line text-xl font-light leading-10 text-white/88">
-            {currentContent}
-          </div>
-
-          <button
-            onClick={advance}
-            className="mt-16 border-b border-[#d7ba7d]/30 bg-transparent pb-1 text-sm tracking-[0.2em] text-[#f3dfaa] transition-all duration-300 hover:border-[#d7ba7d]/80"
-          >
-            continue
-          </button>
-        </>
-      )}
-    </div>
-  </section>
-    );
-  }
+              continue
+            </button>
+          </>
+        )}
+      </div>
+    </section>
+  );
+}

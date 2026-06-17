@@ -11,8 +11,8 @@ type Screen = {
 };
 
 const arrivalScreens = [
-  "You found this place.\n\nThat was not an accident.",
-  "There is nothing you need to do right now.\n\nJust arrive.\n\nYou belong here.",
+  'You found this place.\n\nThat was not an accident.',
+  'There is nothing you need to do right now.\n\nJust arrive.\n\nYou belong here.',
 ];
 
 export default function BeginPage() {
@@ -32,12 +32,16 @@ export default function BeginPage() {
     async function init() {
       const params = new URLSearchParams(window.location.search);
       const code = params.get('code');
+
       if (code) {
         await supabase.auth.exchangeCodeForSession(code);
         window.history.replaceState({}, '', '/begin');
       }
 
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
       if (!user) {
         window.location.href = '/enter';
         return;
@@ -88,10 +92,12 @@ export default function BeginPage() {
 
   async function advance() {
     if (locked || !visible) return;
+
     setLocked(true);
 
     if (arrivalIndex !== null) {
       setVisible(false);
+
       setTimeout(() => {
         if (arrivalIndex < arrivalScreens.length - 1) {
           setArrivalIndex(arrivalIndex + 1);
@@ -104,61 +110,71 @@ export default function BeginPage() {
           setLocked(false);
         }
       }, 700);
+
       return;
     }
 
     if (showSigil) {
       setVisible(false);
+
       setTimeout(() => {
         setShowSigil(false);
         setVisible(true);
         setLocked(false);
       }, 700);
+
       return;
     }
 
     if (screens.length === 0) {
-  window.location.reload();
-  return;
-}
+      window.location.reload();
+      return;
+    }
 
-if (currentIndex < screens.length - 1) {
-  setVisible(false);
-  setTimeout(() => {
-    setCurrentIndex((i) => i + 1);
-    setVisible(true);
-    setLocked(false);
-  }, 700);
-} else {
-  const supabase = createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return;
+    if (currentIndex < screens.length - 1) {
+      setVisible(false);
 
-  await supabase.from('loops').insert({
-    user_id: user.id,
-    pathway: 'return_to_self',
-    status: 'active',
-    session_id: user.id,
-  });
+      setTimeout(() => {
+        setCurrentIndex((i) => i + 1);
+        setVisible(true);
+        setLocked(false);
+      }, 700);
 
-  await supabase.from('participant_flows').insert({
-    session_id: user.id,
-    user_id: user.id,
-    flow_number: flowNumber,
-  });
+      return;
+    }
 
-  await supabase.from('returns').insert({
-    session_id: user.id,
-    user_id: user.id,
-    door: 'return_to_self',
-    pathway: 'return_to_self',
-    response_category: 'general',
-    next_instruction: null,
-    status: 'active',
-  });
+    const supabase = createClient();
 
-  window.location.href = `/pathway/return-to-self?session_id=${encodeURIComponent(user.id)}`;
-}
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) return;
+
+    await supabase.from('loops').insert({
+      user_id: user.id,
+      pathway: 'return_to_self',
+      status: 'active',
+      session_id: user.id,
+    });
+
+    await supabase.from('participant_flows').insert({
+      session_id: user.id,
+      user_id: user.id,
+      flow_number: flowNumber,
+    });
+
+    await supabase.from('returns').insert({
+      session_id: user.id,
+      user_id: user.id,
+      door: 'return_to_self',
+      pathway: 'return_to_self',
+      response_category: 'general',
+      next_instruction: null,
+      status: 'active',
+    });
+
+    window.location.href = `/pathway/return-to-self?session_id=${encodeURIComponent(user.id)}`;
   }
 
   if (loading) {
@@ -167,12 +183,27 @@ if (currentIndex < screens.length - 1) {
 
   const isInArrival = arrivalIndex !== null;
   const current = isInArrival
-    ? { content: arrivalScreens[arrivalIndex!] }
+    ? { content: arrivalScreens[arrivalIndex] }
     : screens[currentIndex];
-  const isFinal = isInArrival ? false : (screens[currentIndex]?.is_final_screen ?? false);
+
+  const isFinal = isInArrival
+    ? false
+    : screens[currentIndex]?.is_final_screen ?? false;
 
   return (
     <main className="min-h-screen bg-black text-white flex items-center justify-center px-8">
+      <header className="fixed top-0 left-0 right-0 z-10">
+        <div className="mx-auto flex max-w-7xl items-center px-6 py-5 md:px-10">
+          <div>
+            <p className="text-sm tracking-[0.25em] text-[#d7ba7d]">
+              the codeXverse™
+            </p>
+            <p className="text-xs text-white/55">
+              Arrival
+            </p>
+          </div>
+        </div>
+      </header>
 
       <p className="fixed bottom-6 left-0 right-0 text-center text-xs text-white/20 leading-5 px-6 z-50">
         This is not therapy. It is not a substitute for professional support.
@@ -206,10 +237,6 @@ if (currentIndex < screens.length - 1) {
             </div>
           ) : (
             <>
-              <p className="text-xs tracking-[0.3em] text-[#d7ba7d] mb-16">
-                the codeXverse
-              </p>
-
               <div className="space-y-5 text-xl leading-10 text-white/88 whitespace-pre-line font-light">
                 {current?.content}
               </div>
