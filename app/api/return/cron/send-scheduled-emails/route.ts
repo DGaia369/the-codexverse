@@ -1,33 +1,23 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
-import { sendPostEncounterEmail } from "@/utils/resend";
+import { sendDayThreeEmail, sendDaySevenEmail } from "@/utils/resend";
 
-export async function POST(req: Request) {
+export async function GET() {
+  return processScheduledEmails();
+}
+
+export async function POST() {
+  return processScheduledEmails();
+}
+
+async function processScheduledEmails() {
   try {
-    const body = await req.json();
-
-    const email = body.email;
-    const q5NonNegotiable = body.q5NonNegotiable;
-    const q1Completed = body.q1Completed ?? body.q1_completed ?? null;
-    const q2Resistance = body.q2Resistance ?? body.q2_resistance ?? null;
-    const q3Changed = body.q3Changed ?? body.q3_changed ?? null;
-    const q4TruthRevealed = body.q4TruthRevealed ?? body.q4_truth_revealed ?? null;
-    const userId = body.user_id ?? body.userId ?? null;
-    const sessionId = body.sessionId ?? body.session_id ?? null;
-    const encounterQuestion = body.encounterQuestion ?? body.encounter_question ?? null;
-
-    if (!email || !q5NonNegotiable) {
-      return NextResponse.json(
-        { ok: false, error: "Missing email or q5NonNegotiable" },
-        { status: 400 }
-      );
-    }
-
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
     const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
     if (!supabaseUrl || !serviceRoleKey) {
       console.error("Missing Supabase environment variables");
+
       return NextResponse.json(
         { ok: false, error: "Supabase environment variables missing" },
         { status: 500 }
@@ -36,79 +26,118 @@ export async function POST(req: Request) {
 
     const supabase = createClient(supabaseUrl, serviceRoleKey);
 
-    // Write to returns table — all five fields
-    const { error: returnsError } = await supabase.from("returns").insert({
-      email,
-      user_id: userId,
-      session_id: sessionId,
-      encounter_question: encounterQuestion,
-      q1_completed: q1Completed,
-      q2_resistance: q2Resistance,
-      q3_changed: q3Changed,
-      q4_truth_revealed: q4TruthRevealed,
-      q5_non_negotiable: q5NonNegotiable,
-    });
+    const { data: dueEmails, error: fetchError } = await supabase
+      .from("scheduled_emails")
+      .select(
+        "id,email,email_type,q5_non_negotiable,q1_completed,q2_resistance,q3_changed,q4_truth_revealed,send_at,status"
+      )
+      .eq("status", "pending")
+      .lte("send_at", new Date().toISOString())
+      .order("send_at", { ascending: true })
+      .limit(10);
 
-    if (returnsError) {
-      console.error("Returns table insert error:", returnsError);
+    if (fetchError) {
+      console.error("Scheduled email fetch error:", fetchError);
+
+      return NextResponse.json(
+        { ok: false, error: "Failed to fetch scheduled emails" },
+        { status: 500 }
+      );
     }
 
-    // Send Email 1 immediately
-    const emailOne = await sendPostEncounterEmail({
-      email,
-      q5NonNegotiable,
-    });
+    if (!dueEmails || dueEmails.length === 0) {
+      return NextResponse.json({
+        ok: true,
+        processed: 0,
+        message: "No due scheduled emails found.",
+      });
+    }
 
-    // Schedule Day 3 and Day 7 with all five fields
-    const day3 = new Date();
-    day3.setDate(day3.getDate() + 3);
+    const results = [];
 
-    const day7 = new Date();
-    day7.setDate(day7.getDate() + 7);
+    for (const scheduledEmail of dueEmails) {
+      try {
+        let sendResult;
 
-    const { error: scheduleError } = await supabase
-      .from("scheduled_emails")
-      .insert([
-        {
-          email,
-          session_id: sessionId,
-          q5_non_negotiable: q5NonNegotiable,
-          q1_completed: q1Completed,
-          q2_resistance: q2Resistance,
-          q3_changed: q3Changed,
-          q4_truth_revealed: q4TruthRevealed,
-          email_type: "day3",
-          send_at: day3.toISOString(),
-          status: "pending",
-        },
-        {
-          email,
-          session_id: sessionId,
-          q5_non_negotiable: q5NonNegotiable,
-          q1_completed: q1Completed,
-          q2_resistance: q2Resistance,
-          q3_changed: q3Changed,
-          q4_truth_revealed: q4TruthRevealed,
-          email_type: "day7",
-          send_at: day7.toISOString(),
-          status: "pending",
-        },
-      ]);
+        if (scheduledEmail.email_type === "day3") {
+          sendResult = await sendDayThreeEmail({
+            email: scheduledEmail.email,
+            q5NonNegotiable: scheduledEmail.q5_non_negotiable ?? "",
+            q1Completed: scheduledEmail.q1_completed ?? undefined,
+          });
+        } else if (scheduledEmail.email_type === "day7") {
+          sendResult = await sendDaySevenEmail({
+            email: scheduledEmail.email,
+            q5NonNegotiable: scheduledEmail.q5_non_negotiable ?? "",
+            q3Changed: scheduledEmail.q3_changed ?? undefined,
+          });
+        } else {
+          throw new Error(`Unknown email_type: ${scheduledEmail.email_type}`);
+        }
 
-    if (scheduleError) {
-      console.error("Scheduled email insert error:", scheduleError);
+        if (!sendResult?.ok) {
+          throw new Error(
+            typeof sendResult?.error === "string"
+              ? sendResult.error
+              : JSON.stringify(sendResult?.error ?? "Unknown send error")
+          );
+        }
+
+        const { error: updateError } = await supabase
+          .from("scheduled_emails")
+          .update({
+            status: "sent",
+            sent_at: new Date().toISOString(),
+            error: null,
+          })
+          .eq("id", scheduledEmail.id);
+
+        if (updateError) {
+          throw updateError;
+        }
+
+        results.push({
+          id: scheduledEmail.id,
+          email: scheduledEmail.email,
+          email_type: scheduledEmail.email_type,
+          status: "sent",
+        });
+      } catch (sendError) {
+        console.error("Scheduled email send error:", sendError);
+
+        const errorMessage =
+          sendError instanceof Error
+            ? sendError.message
+            : JSON.stringify(sendError);
+
+        await supabase
+          .from("scheduled_emails")
+          .update({
+            status: "failed",
+            error: errorMessage,
+          })
+          .eq("id", scheduledEmail.id);
+
+        results.push({
+          id: scheduledEmail.id,
+          email: scheduledEmail.email,
+          email_type: scheduledEmail.email_type,
+          status: "failed",
+          error: errorMessage,
+        });
+      }
     }
 
     return NextResponse.json({
       ok: true,
-      emailOne,
-      scheduled: !scheduleError,
+      processed: results.length,
+      results,
     });
   } catch (error) {
-    console.error("Return route error:", error);
+    console.error("Scheduled email processor failed:", error);
 
     return NextResponse.json(
-      { ok: false, error: "Return route failed" },
+      { ok: false, error: "Scheduled email processor failed" },
       { status: 500 }
     );
   }
