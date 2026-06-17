@@ -75,13 +75,20 @@ async function processScheduledEmails() {
           throw new Error(`Unknown email_type: ${scheduledEmail.email_type}`);
         }
 
-        if (!sendResult?.ok) {
-          throw new Error(
-            typeof sendResult?.error === "string"
-              ? sendResult.error
-              : JSON.stringify(sendResult?.error ?? "Unknown send error")
-          );
-        }
+       const sendOutcome = sendResult as {
+  ok?: boolean;
+  error?: unknown;
+} | null | undefined;
+
+if (!sendOutcome?.ok) {
+  const sendError = sendOutcome?.error ?? "Unknown send error";
+
+  throw new Error(
+    typeof sendError === "string"
+      ? sendError
+      : JSON.stringify(sendError)
+  );
+}
 
         const { error: updateError } = await supabase
           .from("scheduled_emails")
