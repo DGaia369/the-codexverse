@@ -1,4 +1,5 @@
 import { Resend } from 'resend';
+import { buildPersonalizedDeclaration } from './declarationBuilder';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -66,13 +67,26 @@ function pickFrom<T>(pool: T[]): T {
 }
 
 // --- Email 1: Same Day ---
+// Updated: now accepts the five Return answers and builds the
+// personalized declaration (with "The Evidence You Carried Through"
+// page inserted) instead of reading the static file directly.
+// Everything else in this function -- subject, randomization pools,
+// HTML body, attachment filename -- is unchanged.
 
 export async function sendPostEncounterEmail({
   email,
   q5NonNegotiable,
+  q1Completed,
+  q2Resistance,
+  q3Changed,
+  q4TruthRevealed,
 }: {
   email: string;
   q5NonNegotiable: string;
+  q1Completed?: string;
+  q2Resistance?: string;
+  q3Changed?: string;
+  q4TruthRevealed?: string;
 }) {
   const opening = pickFrom(openingPool);
   const framing = pickFrom(framingPool);
@@ -81,7 +95,24 @@ export async function sendPostEncounterEmail({
   const fs = await import('fs');
   const path = await import('path');
   const declarationPath = path.join(process.cwd(), 'public', 'declaration.pdf');
-  const declarationBuffer = fs.readFileSync(declarationPath).toString("base64");
+  const baseDeclarationBuffer = fs.readFileSync(declarationPath);
+
+  let attachmentBuffer: Buffer;
+
+  try {
+    attachmentBuffer = await buildPersonalizedDeclaration(baseDeclarationBuffer, {
+      q1Completed,
+      q2Resistance,
+      q3Changed,
+      q4TruthRevealed,
+      q5NonNegotiable,
+    });
+  } catch (personalizationError) {
+    // If personalization fails for any reason, fall back to the
+    // static declaration so Email 1 still sends with an attachment.
+    console.error('Declaration personalization error:', personalizationError);
+    attachmentBuffer = baseDeclarationBuffer;
+  }
 
   const { error } = await resend.emails.send({
     from: 'the codeXverse™ <no-reply@thecodexverse.com>',
@@ -90,7 +121,7 @@ export async function sendPostEncounterEmail({
     attachments: [
       {
         filename: "I Choose Me the Declaration.pdf",
-        content: Buffer.from(declarationBuffer, 'base64'),
+        content: attachmentBuffer,
       },
     ],
     html: `
