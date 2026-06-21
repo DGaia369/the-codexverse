@@ -1,7 +1,21 @@
 import { Resend } from 'resend';
 import { buildPersonalizedDeclaration } from './declarationBuilder';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+let resendClient: Resend | null = null;
+
+function getResendClient() {
+  const apiKey = process.env.RESEND_API_KEY;
+
+  if (!apiKey) {
+    throw new Error("RESEND_API_KEY is missing");
+  }
+
+  if (!resendClient) {
+    resendClient = new Resend(apiKey);
+  }
+
+  return resendClient;
+}
 
 // --- Randomization Pools ---
 
@@ -114,7 +128,7 @@ export async function sendPostEncounterEmail({
     attachmentBuffer = baseDeclarationBuffer;
   }
 
-  const { error } = await resend.emails.send({
+  const { error } = await getResendClient().emails.send({
     from: 'the codeXverse™ <no-reply@thecodexverse.com>',
     to: email,
     subject: 'Something real just happened.',
@@ -191,7 +205,7 @@ export async function sendDayThreeEmail({
     ? `<p style="color:rgba(255,255,255,0.85);font-size:17px;font-weight:300;line-height:1.9;margin:0 0 24px 0;">You said you completed something: <em>${q1Completed}</em>. That is evidence. Not performance. Evidence that when you said you would, you did.</p>`
     : '';
 
-  const { error } = await resend.emails.send({
+  const { error } = await getResendClient().emails.send({
     from: 'the codeXverse™ <no-reply@thecodexverse.com>',
     to: email,
     subject: 'Three days ago, something shifted.',
@@ -269,7 +283,7 @@ export async function sendDaySevenEmail({
     ? `<p style="color:rgba(255,255,255,0.85);font-size:17px;font-weight:300;line-height:1.9;margin:0 0 24px 0;">You said something changed: <em>${q3Changed}</em>. That is the Recognition Loop running. Something that was invisible became visible. That is the whole point.</p>`
     : '';
 
-  const { error } = await resend.emails.send({
+  const { error } = await getResendClient().emails.send({
     from: 'the codeXverse™ <no-reply@thecodexverse.com>',
     to: email,
     subject: 'A week ago, you did not look away.',
