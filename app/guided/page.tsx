@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { Suspense, useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { createClient } from '@supabase/supabase-js';
+import { createClient, SupabaseClient } from '@supabase/supabase-js';
 
 type ReturnRow = {
   activation_unlock_at?: string | null;
@@ -13,10 +13,17 @@ type ReturnRow = {
   pathway: string | null;
 };
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
+let supabaseClient: SupabaseClient | null = null;
+
+function getSupabaseClient(): SupabaseClient {
+  if (!supabaseClient) {
+    supabaseClient = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    );
+  }
+  return supabaseClient;
+}
 
 function AccessBlocked({ message }: { message: string }) {
   return (
@@ -75,6 +82,8 @@ function GuidedContent() {
 
       setLoading(true);
       setError(null);
+
+      const supabase = getSupabaseClient();
 
       const { data: rows, error: fetchError } = await supabase
         .from('returns')
