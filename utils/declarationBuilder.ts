@@ -204,7 +204,7 @@ async function buildEvidencePageDoc(
   });
 
   // Footer
-  const footerText = "the codeXverse\u2122 \u00B7 thecodeXverse.com";
+  const footerText = "the codeXverse\u2122 \u00B7 thecodexverse.com";
   const footerSize = 9;
   const footerWidth = fontItalic.widthOfTextAtSize(footerText, footerSize);
   page.drawText(footerText, {
