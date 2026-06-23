@@ -3,17 +3,10 @@ import { buildPersonalizedDeclaration } from './declarationBuilder';
 
 let resendClient: Resend | null = null;
 
-function getResendClient() {
-  const apiKey = process.env.RESEND_API_KEY;
-
-  if (!apiKey) {
-    throw new Error("RESEND_API_KEY is missing");
-  }
-
+function getResendClient(): Resend {
   if (!resendClient) {
-    resendClient = new Resend(apiKey);
+    resendClient = new Resend(process.env.RESEND_API_KEY);
   }
-
   return resendClient;
 }
 
@@ -81,11 +74,6 @@ function pickFrom<T>(pool: T[]): T {
 }
 
 // --- Email 1: Same Day ---
-// Updated: now accepts the five Return answers and builds the
-// personalized declaration (with "The Evidence You Carried Through"
-// page inserted) instead of reading the static file directly.
-// Everything else in this function -- subject, randomization pools,
-// HTML body, attachment filename -- is unchanged.
 
 export async function sendPostEncounterEmail({
   email,
@@ -122,8 +110,6 @@ export async function sendPostEncounterEmail({
       q5NonNegotiable,
     });
   } catch (personalizationError) {
-    // If personalization fails for any reason, fall back to the
-    // static declaration so Email 1 still sends with an attachment.
     console.error('Declaration personalization error:', personalizationError);
     attachmentBuffer = baseDeclarationBuffer;
   }
@@ -190,7 +176,6 @@ export async function sendPostEncounterEmail({
 }
 
 // --- Email 2: Day 3 ---
-// Updated: accepts optional q1Completed for one personal acknowledgment line
 
 export async function sendDayThreeEmail({
   email,
@@ -268,7 +253,6 @@ export async function sendDayThreeEmail({
 }
 
 // --- Email 3: Day 7 ---
-// Updated: accepts optional q3Changed for one personal acknowledgment line
 
 export async function sendDaySevenEmail({
   email,
@@ -317,15 +301,15 @@ export async function sendDaySevenEmail({
         </p>
 
         <p style="color:rgba(255,255,255,0.85);font-size:17px;font-weight:300;line-height:1.9;margin:0 0 16px 0;">
-          If something in you is ready to go deeper, the next room is open.
+          If something in you is ready to go deeper, the next door is waiting.
         </p>
 
         <p style="color:rgba(255,255,255,0.85);font-size:17px;font-weight:300;line-height:1.9;margin:0 0 48px 0;">
           Not because something essential was withheld here. Because recognition revealed there is more.
         </p>
 
-        <a href="https://www.thecodexverse.com/begin" style="display:inline-block;color:#d7ba7d;font-size:13px;letter-spacing:0.2em;text-decoration:none;border:1px solid rgba(215,186,125,0.4);padding:12px 28px;">
-          RETURN TO THE THRESHOLD
+        <a href="https://thecodexverse.com/door?from=day7&door=return_to_self&pathway=the_agreement" style="display:inline-block;color:#d7ba7d;font-size:13px;letter-spacing:0.2em;text-decoration:none;border:1px solid rgba(215,186,125,0.4);padding:12px 28px;">
+          CONTINUE TO THE AGREEMENT
         </a>
 
         <p style="color:rgba(255,255,255,0.25);font-size:13px;line-height:1.8;margin:48px 0 8px 0;font-style:italic;">
