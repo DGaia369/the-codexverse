@@ -49,8 +49,6 @@ function AgreementContent() {
   const [noLongerAgree, setNoLongerAgree] = useState('');
   const [choosingNow, setChoosingNow] = useState('');
 
-  // Load existing record, or create one if none exists. This is the
-  // "randomize once, persist immediately, return consistently" step.
   useEffect(() => {
     let isActive = true;
 
@@ -75,8 +73,14 @@ function AgreementContent() {
           const postResponse = await fetch('/api/agreement', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ session_id: sessionId, door, pathway, source }),
+            body: JSON.stringify({
+              session_id: sessionId,
+              door,
+              pathway,
+              source,
+            }),
           });
+
           const postData = await postResponse.json();
 
           if (!isActive) return;
@@ -114,6 +118,7 @@ function AgreementContent() {
 
   function advance(next: Stage) {
     if (locked) return;
+
     setLocked(true);
     setVisible(false);
 
@@ -124,15 +129,22 @@ function AgreementContent() {
     }, 600);
   }
 
-  async function saveAnswer(field: 'no_longer_in_agreement_with' | 'chosen_agreement', value: string) {
+  async function saveAnswer(
+    field: 'no_longer_in_agreement_with' | 'chosen_agreement',
+    value: string
+  ) {
     if (!sessionId) return;
 
     setSaving(true);
+
     try {
       await fetch('/api/agreement', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ session_id: sessionId, [field]: value }),
+        body: JSON.stringify({
+          session_id: sessionId,
+          [field]: value,
+        }),
       });
     } catch (err) {
       console.error('Agreement save error:', err);
@@ -145,8 +157,9 @@ function AgreementContent() {
     if (!sessionId) return;
 
     setSaving(true);
+
     try {
-      await fetch('/api/agreement', {
+      const response = await fetch('/api/agreement', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -156,6 +169,12 @@ function AgreementContent() {
           complete: true,
         }),
       });
+
+      const data = await response.json();
+
+      if (data?.record) {
+        setRecord(data.record);
+      }
     } catch (err) {
       console.error('Agreement completion error:', err);
     } finally {
@@ -179,7 +198,7 @@ function AgreementContent() {
 
   return (
     <main className="relative min-h-screen bg-[#0a0a0f] px-6 py-24 text-white md:px-10">
-      <header className="fixed top-0 left-0 right-0 z-10">
+      <header className="fixed left-0 right-0 top-0 z-10">
         <div className="mx-auto flex max-w-7xl items-center px-6 py-5 md:px-10">
           <div>
             <p className="text-sm tracking-[0.25em] text-[#d7ba7d]">
@@ -206,12 +225,15 @@ function AgreementContent() {
             <p className="text-xl font-light leading-9 text-white/85">
               You are here again.
             </p>
+
             <p className="text-xl font-light leading-9 text-white/85">
               Not because you failed to finish something.
             </p>
+
             <p className="text-xl font-light leading-9 text-white/85">
               Because something in you was ready for the next door.
             </p>
+
             <button
               onClick={() => advance('noticing')}
               className="mt-12 border-b border-[#d7ba7d]/30 bg-transparent pb-1 text-sm tracking-[0.2em] text-[#f3dfaa] transition-all duration-300 hover:border-[#d7ba7d]/80"
@@ -226,11 +248,13 @@ function AgreementContent() {
             <p className="text-xs uppercase tracking-[0.25em] text-[#d7ba7d]">
               The Noticing
             </p>
+
             {noticing.lines.map((line, i) => (
               <p key={i} className="text-xl font-light leading-9 text-white/85">
                 {line}
               </p>
             ))}
+
             <button
               onClick={() => advance('recognition')}
               className="mt-12 border-b border-[#d7ba7d]/30 bg-transparent pb-1 text-sm tracking-[0.2em] text-[#f3dfaa] transition-all duration-300 hover:border-[#d7ba7d]/80"
@@ -247,6 +271,7 @@ function AgreementContent() {
                 {line}
               </p>
             ))}
+
             <button
               onClick={() => advance('reflection')}
               className="mt-12 border-b border-[#d7ba7d]/30 bg-transparent pb-1 text-sm tracking-[0.2em] text-[#f3dfaa] transition-all duration-300 hover:border-[#d7ba7d]/80"
@@ -261,16 +286,20 @@ function AgreementContent() {
             <p className="text-xs uppercase tracking-[0.25em] text-[#d7ba7d]">
               Before you write anything
             </p>
+
             <p className="text-xl font-light leading-9 text-white/85">
               Sit with this for a moment.
             </p>
+
             <p className="text-xl font-light leading-9 text-white/85">
-              Where in your life have you been keeping an agreement you
-              never actually chose?
+              Where in your life have you been keeping an agreement you never
+              actually chose?
             </p>
+
             <p className="text-lg font-light leading-8 text-white/55">
               Do not answer quickly. Let it surface on its own.
             </p>
+
             <button
               onClick={() => advance('release')}
               className="mt-12 border-b border-[#d7ba7d]/30 bg-transparent pb-1 text-sm tracking-[0.2em] text-[#f3dfaa] transition-all duration-300 hover:border-[#d7ba7d]/80"
@@ -285,23 +314,28 @@ function AgreementContent() {
             <p className="text-xs uppercase tracking-[0.25em] text-[#d7ba7d]">
               What you are no longer in agreement with
             </p>
+
             <p className="text-lg font-light leading-8 text-white/75">
               Name it in your own words. Nothing here is graded or judged.
             </p>
+
             <textarea
               value={noLongerAgree}
               onChange={(e) => setNoLongerAgree(e.target.value)}
-              onBlur={() => saveAnswer('no_longer_in_agreement_with', noLongerAgree)}
+              onBlur={() =>
+                saveAnswer('no_longer_in_agreement_with', noLongerAgree)
+              }
               rows={5}
               placeholder="I am no longer in agreement with..."
               className="w-full rounded-2xl border border-white/15 bg-white/5 p-5 text-lg font-light leading-8 text-white placeholder:text-white/30 focus:border-[#d7ba7d]/50 focus:outline-none"
             />
+
             <button
               onClick={async () => {
                 await saveAnswer('no_longer_in_agreement_with', noLongerAgree);
                 advance('choosing');
               }}
-              disabled={noLongerAgree.trim().length === 0}
+              disabled={noLongerAgree.trim().length === 0 || saving}
               className="mt-6 border-b border-[#d7ba7d]/30 bg-transparent pb-1 text-sm tracking-[0.2em] text-[#f3dfaa] transition-all duration-300 hover:border-[#d7ba7d]/80 disabled:cursor-not-allowed disabled:opacity-30"
             >
               continue
@@ -314,10 +348,12 @@ function AgreementContent() {
             <p className="text-xs uppercase tracking-[0.25em] text-[#d7ba7d]">
               The agreement you are choosing now
             </p>
+
             <p className="text-lg font-light leading-8 text-white/75">
-              Not the one you think you should write. The one that is
-              actually true for you, starting now.
+              Not the one you think you should write. The one that is actually
+              true for you, starting now.
             </p>
+
             <textarea
               value={choosingNow}
               onChange={(e) => setChoosingNow(e.target.value)}
@@ -326,6 +362,7 @@ function AgreementContent() {
               placeholder="From this point forward, I agree to..."
               className="w-full rounded-2xl border border-white/15 bg-white/5 p-5 text-lg font-light leading-8 text-white placeholder:text-white/30 focus:border-[#d7ba7d]/50 focus:outline-none"
             />
+
             <button
               onClick={async () => {
                 await completeAgreement();
@@ -344,30 +381,40 @@ function AgreementContent() {
             <p className="text-xs uppercase tracking-[0.25em] text-[#d7ba7d]">
               the Agreement™
             </p>
+
             <p className="text-xl font-light leading-9 text-white/85">
               Agreement recorded.
             </p>
+
             <p className="text-xl font-light leading-9 text-white/85">
               You named what you are no longer carrying.
             </p>
+
             {noLongerAgree.trim().length > 0 && (
               <p className="border-l border-[#d7ba7d]/30 pl-5 text-lg italic leading-8 text-[#d7ba7d]">
-                "{noLongerAgree.trim()}"
+                &quot;{noLongerAgree.trim()}&quot;
               </p>
             )}
+
             <p className="text-xl font-light leading-9 text-white/85">
               You named what you are choosing now.
             </p>
+
             {choosingNow.trim().length > 0 && (
               <p className="border-l border-[#d7ba7d]/30 pl-5 text-lg italic leading-8 text-[#d7ba7d]">
-                "{choosingNow.trim()}"
+                &quot;{choosingNow.trim()}&quot;
               </p>
             )}
+
             {completion.lines.map((line, i) => (
-            <p key={i} className="pt-2 text-xl font-light leading-9 text-white/85">
-            {line}
-            </p>
-     ))}
+              <p
+                key={i}
+                className="pt-2 text-xl font-light leading-9 text-white/85"
+              >
+                {line}
+              </p>
+            ))}
+
             <p className="pt-10 text-sm italic text-white/40">
               The door does not close. It waits.
             </p>
