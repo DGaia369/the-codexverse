@@ -382,11 +382,7 @@ function AgreementContent() {
               the Agreement™
             </p>
 
-            <p className="text-xl font-light leading-9 text-white/85">
-              Agreement recorded.
-            </p>
-
-            <p className="text-xl font-light leading-9 text-white/85">
+              <p className="text-xl font-light leading-9 text-white/85">
               You named what you are no longer carrying.
             </p>
 
