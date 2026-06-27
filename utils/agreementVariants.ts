@@ -58,9 +58,6 @@ export const completionVariants: AgreementVariant[] = [
     key: "completion_original",
     eyebrow: "THE AGREEMENT™",
     lines: [
-      "Agreement recorded.",
-      "You named what you are no longer carrying.",
-      "You named what you are choosing now.",
       "This agreement does not need to be perfect.",
       "It only needs to be yours.",
     ],
@@ -69,7 +66,6 @@ export const completionVariants: AgreementVariant[] = [
     key: "completion_authorship",
     eyebrow: "THE AGREEMENT™",
     lines: [
-      "Agreement recorded.",
       "You did not just answer another question.",
       "You returned authorship to yourself.",
       "This does not need to be perfect.",
