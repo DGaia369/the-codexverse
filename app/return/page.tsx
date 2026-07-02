@@ -156,6 +156,11 @@ export default function ReturnPage() {
     };
   }, []);
 
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    setReturnSessionId(params.get('session_id') ?? '');
+  }, []);
+
   function advanceIntegrate(next: number) {
     setIntegrateVisible(false);
     setTimeout(() => {
@@ -210,6 +215,7 @@ export default function ReturnPage() {
           q5NonNegotiable,
           email,
           user_id: user?.id || null,
+          session_id: returnSessionId,
         }),
       });
 
@@ -243,7 +249,6 @@ export default function ReturnPage() {
         }
       }
 
-      // Pick randomized content for integrate screens
       const picked = pickFrom(returnMessages);
       setSelectedMessage(picked);
       setSelectedScreen2(pickFrom(integrateScreen2Pool));
@@ -258,15 +263,10 @@ export default function ReturnPage() {
     }
   };
 
-useEffect(() => {
-  const params = new URLSearchParams(window.location.search);
-  setReturnSessionId(params.get('session_id') ?? '');
-}, []);
+  const returnCompleteHref = `/return-complete?door=return_to_self&pathway=return_to_self&session_id=${encodeURIComponent(returnSessionId)}`;
 
-   const returnCompleteHref = `/return-complete?door=return_to_self&pathway=return_to_self&session_id=${encodeURIComponent(returnSessionId)}`;
-
-    if (lockMessage) {
-     return (
+  if (lockMessage) {
+    return (
       <main className="min-h-screen bg-black text-white px-6 py-16 flex items-center animate-fadeIn">
         <div className="mx-auto max-w-2xl">
           <p className="mb-4 text-xs tracking-[0.3em] text-[#d7ba7d]">
@@ -404,17 +404,16 @@ useEffect(() => {
                   <a
                   href={returnCompleteHref}
                   className="inline-block text-sm text-[#d7ba7d] tracking-[0.2em] border-b border-[#d7ba7d]/30 pb-1 hover:border-[#d7ba7d]/80 transition-all duration-300"
-                  >
+                >
                   I want to go deeper →
-                 </a>
+                </a>
                 <div className="pt-10">
                   
-                 <a
-                 href={returnCompleteHref}
-                  
-                  className="inline-block rounded-full border border-white/20 px-5 py-2 text-sm hover:bg-white/10"
+                    <a
+                    href={returnCompleteHref}
+                    className="inline-block rounded-full border border-white/20 px-5 py-2 text-sm hover:bg-white/10"
                   >
-                  Return to the codeXverse
+                    Return to the codeXverse
                   </a>
                 </div>
               </div>
