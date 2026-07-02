@@ -39,7 +39,7 @@ export async function POST(req: NextRequest) {
       .select(
         'q1_completed, q2_resistance, q3_changed, q4_truth_revealed, q5_non_negotiable'
       )
-      .eq('session_id', sessionId!)
+      .eq('session_id', session_id)
       .order('created_at', { ascending: false })
       .limit(1)
       .maybeSingle();
