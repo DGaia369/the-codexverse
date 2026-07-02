@@ -140,9 +140,7 @@ export default async function DoorPage({ searchParams }: DoorPageProps) {
 
         <div className="mt-16">
           <a
-            href={`/tier-2?from=door&door=${encodeURIComponent(
-              resolvedDoor
-            )}&pathway=the_agreement&session_id=${encodeURIComponent(session_id)}`}
+            href={`/declaration?session_id=${encodeURIComponent(session_id)}`}
             className="inline-block rounded-full border border-[#d7ba7d]/35 bg-[#d7ba7d]/10 px-7 py-3 text-sm font-medium text-[#f3dfaa] transition hover:border-[#d7ba7d]/80 hover:bg-[#d7ba7d]/18"
           >
             I am ready to go deeper →
