@@ -470,23 +470,49 @@ function DeclarationContent() {
                     {downloading ? 'preparing...' : 'download'}
                   </button>
                 </div>
+
+                <div className="space-y-3 pt-10">
+                  <p className="text-sm italic text-white/40">
+                    The door does not close. It waits.
+                  </p>
+                  <p className="text-sm italic text-white/40">
+                    There is no rush from here. Let this settle.
+                    Nothing else needs your attention yet.
+                  </p>
+                  
+                    <a
+                    href={sessionId ? `/between-threshold?session_id=${encodeURIComponent(sessionId)}` : '/between-threshold'}
+                    className="inline-block border-b border-[#d7ba7d]/30 pb-1 text-sm tracking-[0.15em] text-[#f3dfaa] transition-all duration-300 hover:border-[#d7ba7d]/80"
+                  >
+                    continue to the next door
+                  </a>
+                </div>
               </div>
             )}
           </div>
         )}
 
-        <p className="pt-10 text-sm italic text-white/40 print:hidden">
-          The door does not close. It waits.
-        </p>
+        {!isSealed && (
+          <p className="pt-10 text-sm italic text-white/40 print:hidden">
+            The door does not close. It waits.
+          </p>
+        )}
 
       </div>
     </main>
   );
 }
-
 export default function DeclarationPage() {
   return (
-    <Suspense fallback={null}>
+    <Suspense
+      fallback={
+        <main className="min-h-screen bg-[#0a0a0f] px-6 py-24 text-white md:px-10">
+          <div className="mx-auto w-full max-w-2xl pt-16">
+            <div className="h-4 w-32 animate-pulse rounded-full bg-white/10" />
+          </div>
+        </main>
+      }
+    >
       <DeclarationContent />
     </Suspense>
   );
