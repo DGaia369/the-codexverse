@@ -19,40 +19,39 @@ export default function Home() {
         </div>
       </header>
 
-      <section className="relative flex min-h-screen items-center">
-        <div className="mx-auto w-full max-w-7xl px-6 md:px-10">
-          <div className="mx-auto max-w-3xl space-y-10 text-center">
-            <div className="space-y-1">
-              <p
-                className="text-2xl font-light leading-snug tracking-wide md:text-3xl"
-                style={{ color: '#F4EDE0' }}
-              >
-                What part of your life still looks functional,
-              </p>
-              <p
-                className="text-2xl font-light leading-snug tracking-wide md:text-3xl"
-                style={{ color: '#F4EDE0' }}
-              >
-                but no longer feels like yours?
-              </p>
-            </div>
+      <section className="relative flex min-h-screen flex-col items-center justify-center px-6 text-center">
+        <div className="mx-auto max-w-3xl space-y-10 md:-translate-x-10 lg:-translate-x-16">
+          <p
+            className="text-2xl font-light leading-relaxed tracking-wide md:text-3xl"
+            style={{ color: '#F4EDE0' }}
+          >
+            What part of your life still looks functional,
+            <br />
+            but no longer feels like yours?
+          </p>
 
-            <div className="space-y-3">
-              <p className="text-sm leading-relaxed text-white/50">
-                You do not have to explain the whole story.
-              </p>
-              <p className="text-sm leading-relaxed text-white/50">
-                Start with the part that has become impossible to ignore.
-              </p>
-            </div>
-
-            <Link
-              href="/begin"
-              className="inline-block text-sm tracking-[0.2em] text-[#d7ba7d] transition-opacity duration-300 hover:opacity-60"
+          <div className="space-y-3">
+            <p
+              className="text-sm leading-relaxed"
+              style={{ color: '#F4EDE0', opacity: 0.5 }}
             >
-              Enter the Threshold™
-            </Link>
+              You do not have to explain the whole story.
+            </p>
+            <p
+              className="text-sm leading-relaxed"
+              style={{ color: '#F4EDE0', opacity: 0.5 }}
+            >
+              Start with the part that has become impossible to ignore.
+            </p>
           </div>
+
+          <Link
+            href="/begin"
+            className="inline-block text-sm tracking-[0.2em] transition-opacity duration-300 hover:opacity-60"
+            style={{ color: '#d7ba7d' }}
+          >
+            Enter the Threshold™
+          </Link>
         </div>
       </section>
 
