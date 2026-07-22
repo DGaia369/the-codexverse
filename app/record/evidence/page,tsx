@@ -1,0 +1,186 @@
+import { redirect } from 'next/navigation';
+import { cookies } from 'next/headers';
+import { createServerClient } from '@supabase/ssr';
+import Link from 'next/link';
+
+export default async function EvidencePage({
+  searchParams,
+}: {
+  searchParams: { session_id?: string };
+}) {
+  const sessionId = searchParams.session_id;
+
+  if (!sessionId) {
+    redirect('/record');
+  }
+
+  const cookieStore = await cookies();
+
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        getAll() { return cookieStore.getAll(); },
+        setAll(cookiesToSet) {
+          try {
+            cookiesToSet.forEach(({ name, value, options }) =>
+              cookieStore.set(name, value, options)
+            );
+          } catch (_e) {
+            // Server Component cannot set cookies.
+            // Session reading still works correctly.
+          }
+        },
+      },
+    }
+  );
+
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user?.email) {
+    redirect('/begin');
+  }
+
+  const email = user.email.toLowerCase();
+
+  const { data: returnRow } = await supabase
+    .from('returns')
+    .select(
+      'q1_completed, q2_resistance, q3_changed, q4_truth_revealed, q5_non_negotiable'
+    )
+    .eq('email', email)
+    .eq('session_id', sessionId)
+    .maybeSingle();
+
+  if (!returnRow) {
+    redirect('/record');
+  }
+
+  const evidence = [
+    { label: 'What you completed', value: returnRow.q1_completed },
+    { label: 'What resisted', value: returnRow.q2_resistance },
+    { label: 'What changed', value: returnRow.q3_changed },
+    { label: 'What was revealed', value: returnRow.q4_truth_revealed },
+    { label: 'What became non-negotiable', value: returnRow.q5_non_negotiable },
+  ];
+
+  return (
+    <main style={{ minHeight: '100vh', backgroundColor: '#000000', color: '#F4EDE0' }}>
+
+      <header style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        zIndex: 10,
+        padding: '20px 40px',
+      }}>
+        <p style={{
+          fontSize: '13px',
+          letterSpacing: '0.25em',
+          color: '#d7ba7d',
+          margin: 0,
+        }}>
+          the codeXverse™
+        </p>
+        <p style={{
+          fontSize: '11px',
+          color: 'rgba(255,255,255,0.55)',
+          margin: '2px 0 0',
+        }}>
+          Recognition Record™
+        </p>
+      </header>
+
+      <div style={{
+        maxWidth: '720px',
+        margin: '0 auto',
+        padding: '128px 40px 96px',
+      }}>
+
+        <div style={{ marginBottom: '64px' }}>
+          <p style={{
+            fontSize: '11px',
+            letterSpacing: '0.2em',
+            textTransform: 'uppercase',
+            color: '#d7ba7d',
+            margin: '0 0 16px',
+          }}>
+            Evidence
+          </p>
+          <h1 style={{
+            fontSize: '32px',
+            fontWeight: 300,
+            letterSpacing: '0.02em',
+            color: '#F4EDE0',
+            margin: '0 0 16px',
+            lineHeight: 1.3,
+          }}>
+            The Evidence You Carried Through
+          </h1>
+          <p style={{
+            fontSize: '14px',
+            color: 'rgba(255,255,255,0.4)',
+            margin: 0,
+            lineHeight: 1.7,
+          }}>
+            Your first words were not a draft. They were evidence
+            of what became visible when you crossed.
+          </p>
+        </div>
+
+        <div>
+          {evidence.map((item) => (
+            <div
+              key={item.label}
+              style={{
+                borderTop: '1px solid rgba(255,255,255,0.1)',
+                paddingTop: '32px',
+                marginBottom: '40px',
+              }}
+            >
+              <p style={{
+                fontSize: '11px',
+                letterSpacing: '0.15em',
+                textTransform: 'uppercase',
+                color: '#d7ba7d',
+                margin: '0 0 12px',
+              }}>
+                {item.label}
+              </p>
+              <p style={{
+                fontSize: '16px',
+                fontWeight: 300,
+                lineHeight: 1.75,
+                color: item.value ? '#F4EDE0' : 'rgba(255,255,255,0.25)',
+                fontStyle: item.value ? 'normal' : 'italic',
+                margin: 0,
+              }}>
+                {item.value || 'Not recorded'}
+              </p>
+            </div>
+          ))}
+        </div>
+
+        <div style={{
+          borderTop: '1px solid rgba(255,255,255,0.1)',
+          paddingTop: '40px',
+          marginTop: '24px',
+        }}>
+          <Link
+            href="/record"
+            style={{
+              fontSize: '13px',
+              letterSpacing: '0.15em',
+              color: '#d7ba7d',
+              textDecoration: 'none',
+            }}
+          >
+            Return to Recognition Record™
+          </Link>
+        </div>
+
+      </div>
+    </main>
+  );
+}
