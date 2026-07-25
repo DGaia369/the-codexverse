@@ -2,6 +2,7 @@
 
 import { Suspense, useEffect, useRef, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
+import Link from 'next/link';
 
 type DeclarationRecord = {
   q1_completed: string | null;
@@ -449,6 +450,55 @@ function DeclarationContent() {
                 )}
               </div>
             )}
+
+<section
+  style={{
+    marginTop: '72px',
+    paddingTop: '48px',
+    borderTop: '1px solid rgba(217,181,102,0.22)',
+  }}
+>
+  <Link
+    href="/record"
+    style={{
+      display: 'inline-block',
+      margin: '0 0 24px',
+      color: '#D9B566',
+      fontSize: '11px',
+      letterSpacing: '0.22em',
+      textTransform: 'uppercase',
+      textDecoration: 'none',
+      borderBottom: '1px solid rgba(217,181,102,0.3)',
+      paddingBottom: '4px',
+    }}
+  >
+    the Library of Yourself™
+  </Link>
+
+  <p
+    style={{
+      margin: '0 0 20px',
+      color: '#F4EDE0',
+      fontSize: '16px',
+      lineHeight: 1.8,
+    }}
+  >
+    This Declaration™ is the first artifact in your Library of Yourself™.
+  </p>
+
+  <p
+    style={{
+      margin: 0,
+      color: '#B8ADA0',
+      fontSize: '15px',
+      lineHeight: 1.9,
+    }}
+  >
+    Life will become loud again, and there may be days when you lose sight of
+    what became visible here. When that happens, do not begin searching for
+    yourself. Return to your Library of Yourself™. It already remembers.
+  </p>
+</section>
 
             {isSealed && (
               <div className="space-y-4 print:hidden">

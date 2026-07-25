@@ -147,15 +147,7 @@ export default async function RecordPage() {
         >
           the codeXverse™
         </p>
-        <p
-          style={{
-            fontSize: '11px',
-            color: '#B8ADA0',
-            margin: '2px 0 0',
-          }}
-        >
-          Recognition Record™
-        </p>
+   
       </header>
 
       <div
@@ -172,21 +164,33 @@ export default async function RecordPage() {
               fontWeight: 300,
               letterSpacing: '0.02em',
               color: '#F4EDE0',
-              margin: '0 0 16px',
+              margin: '0 0 12px',
               lineHeight: 1.3,
             }}
           >
-            the Recognition Record™
+            the Library of Yourself™
           </h1>
           <p
-            style={{
-              fontSize: '15px',
-              color: '#B8ADA0',
-              margin: '0 0 8px',
+             style={{
+             fontSize: '11px',
+             letterSpacing: '0.2em',
+             textTransform: 'uppercase',
+             color: '#D9B566',
+             margin: '0 0 20px',
             }}
           >
+            Recognition Record™
+          </p>
+          <p
+           style={{
+           fontSize: '15px',
+           color: '#B8ADA0',
+           margin: '0 0 8px',
+       }}
+   >
             What became visible belongs to you.
           </p>
+          
           <p
             style={{
               fontSize: '13px',

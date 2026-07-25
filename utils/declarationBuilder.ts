@@ -218,22 +218,6 @@ async function buildEvidencePageDoc(
   return doc;
 }
 
-/**
- * Reads the static declaration.pdf (as a Buffer), builds the
- * Evidence page, and returns a new PDF (as a Buffer) with the
- * Evidence page inserted between page 3 ("Before We Begin", index 2)
- * and page 4 ("Part One: The Interruption").
- *
- * Page order after insertion:
- *   0: Cover
- *   1: the Declaration / A Gift from the codeXverse
- *   2: Before We Begin
- *   3: The Evidence You Carried Through   <-- NEW
- *   4: Part One: The Interruption
- *   ... (rest unchanged) ...
- *   16: Closing (Once you see it...)
- */
-
 // ---- "I Choose Me" — the sealed, in-platform writing experience ----
 
 export interface DeclarationWritingInputs {
@@ -313,6 +297,11 @@ const CHOOSE_ME_BOTTOM_LIMIT = 110;
  * PDFDocument, one continuous flow across as many pages as the
  * participant's own words require. Returns that document, ready to
  * have its pages copied into the main declaration document.
+ *
+ * Widow/orphan protection: a part heading is never separated from its
+ * first field's prompt and the opening of that field's answer — all
+ * three move to a new page together if they don't fit. This applies
+ * the same standard to headings that fields already receive.
  */
 async function buildChooseMePagesDoc(
   inputs: DeclarationWritingInputs
@@ -323,11 +312,18 @@ async function buildChooseMePagesDoc(
   const fontBold = await doc.embedFont(StandardFonts.TimesRomanBold);
   const fontItalic = await doc.embedFont(StandardFonts.TimesRomanItalic);
 
+  const LINE_HEIGHT = 17;
+  const PROMPT_TO_ANSWER_GAP = 4;
+  const FIELD_GAP = 20;
+  const PART_TITLE_GAP = 26;
+  const PART_GAP = 10;
+  const MIN_ANSWER_LINES_WITH_PROMPT = 2;
+
   let page: PDFPage = doc.addPage([PAGE_WIDTH, PAGE_HEIGHT]);
   let y = PAGE_HEIGHT - CHOOSE_ME_TOP_MARGIN;
 
-  const drawBackground = (p: PDFPage) => {
-    p.drawRectangle({
+  const drawBackground = (targetPage: PDFPage) => {
+    targetPage.drawRectangle({
       x: 0,
       y: 0,
       width: PAGE_WIDTH,
@@ -336,11 +332,15 @@ async function buildChooseMePagesDoc(
     });
   };
 
-  const drawFooter = (p: PDFPage) => {
+  const drawFooter = (targetPage: PDFPage) => {
     const footerText = "the codeXverse\u2122 \u00B7 thecodexverse.com";
     const footerSize = 9;
-    const footerWidth = fontItalic.widthOfTextAtSize(footerText, footerSize);
-    p.drawText(footerText, {
+    const footerWidth = fontItalic.widthOfTextAtSize(
+      footerText,
+      footerSize
+    );
+
+    targetPage.drawText(footerText, {
       x: (PAGE_WIDTH - footerWidth) / 2,
       y: 50,
       size: footerSize,
@@ -358,33 +358,154 @@ async function buildChooseMePagesDoc(
     y = PAGE_HEIGHT - CHOOSE_ME_TOP_MARGIN;
   };
 
+  const hasSpace = (needed: number) =>
+    y - needed >= CHOOSE_ME_BOTTOM_LIMIT;
+
   const ensureSpace = (needed: number) => {
-    if (y - needed < CHOOSE_ME_BOTTOM_LIMIT) {
+    if (!hasSpace(needed)) {
       newPage();
     }
   };
 
-  // Section heading for the whole writing experience
-  page.drawText("I Choose Me", {
-    x: MARGIN_LEFT,
-    y,
-    size: 17,
-    font: fontBold,
-    color: TEXT_COLOR,
-  });
-  y -= 26;
+  const drawTextLines = (
+    lines: string[],
+    options: {
+      x: number;
+      size: number;
+      font: PDFFont;
+      color: ReturnType<typeof rgb>;
+    }
+  ) => {
+    for (const line of lines) {
+      ensureSpace(LINE_HEIGHT);
 
-  page.drawText("These are the words she wrote when she was ready.", {
-    x: MARGIN_LEFT,
-    y,
-    size: 12,
-    font: fontItalic,
-    color: TEXT_COLOR,
-  });
-  y -= 38;
+      page.drawText(line, {
+        x: options.x,
+        y,
+        size: options.size,
+        font: options.font,
+        color: options.color,
+      });
+
+      y -= LINE_HEIGHT;
+    }
+  };
+
+  const getFieldLayout = (
+    field: WritingPartSpec["fields"][number]
+  ) => {
+    const promptLines = wrapText(
+      field.prompt,
+      fontBody,
+      12,
+      CONTENT_WIDTH
+    );
+
+    const answer = safe(inputs[field.key]);
+    const answerLines = wrapText(
+      `\u201C${answer}\u201D`,
+      fontItalic,
+      12,
+      CONTENT_WIDTH - 12
+    );
+
+    return { promptLines, answerLines };
+  };
+
+  const minimumFieldOpeningHeight = (
+    promptLines: string[],
+    answerLines: string[]
+  ) =>
+    promptLines.length * LINE_HEIGHT +
+    PROMPT_TO_ANSWER_GAP +
+    Math.min(
+      Math.max(answerLines.length, 1),
+      MIN_ANSWER_LINES_WITH_PROMPT
+    ) *
+      LINE_HEIGHT;
+
+  const drawField = (
+    field: WritingPartSpec["fields"][number],
+    keepCurrentPage = false
+  ) => {
+    const { promptLines, answerLines } = getFieldLayout(field);
+
+    // For every field except the first field under a protected part
+    // heading, keep the full prompt and the opening of its answer
+    // together. The remainder of a long answer may continue naturally.
+    if (!keepCurrentPage) {
+      ensureSpace(
+        minimumFieldOpeningHeight(promptLines, answerLines)
+      );
+    }
+
+    drawTextLines(promptLines, {
+      x: MARGIN_LEFT,
+      size: 12,
+      font: fontBody,
+      color: TEXT_COLOR,
+    });
+
+    y -= PROMPT_TO_ANSWER_GAP;
+
+    drawTextLines(answerLines, {
+      x: MARGIN_LEFT + 12,
+      size: 12,
+      font: fontItalic,
+      color: QUOTE_COLOR,
+    });
+
+    y -= FIELD_GAP;
+  };
+
+  // Heading for the participant's Library of Yourself™ record.
+   page.drawText("the Library of Yourself\u2122", {
+   x: MARGIN_LEFT,
+   y,
+   size: 17,
+   font: fontBold,
+   color: TEXT_COLOR,
+   });
+   y -= 26;
+
+   page.drawText("These are the words you wrote", {
+   x: MARGIN_LEFT,
+   y,
+   size: 12,
+   font: fontItalic,
+   color: TEXT_COLOR,
+   });
+   y -= 17;
+
+   page.drawText("when you were ready to choose yourself.", {
+   x: MARGIN_LEFT,
+   y,
+   size: 12,
+   font: fontItalic,
+   color: TEXT_COLOR,
+   });
+   y -= 38;
 
   for (const part of WRITING_PARTS) {
-    ensureSpace(40);
+    const firstField = part.fields[0];
+
+    if (!firstField) {
+      continue;
+    }
+
+    const firstLayout = getFieldLayout(firstField);
+
+    // Protect the part heading from becoming an orphan. Reserve room
+    // for the heading, the complete first prompt, and the opening of
+    // the first answer. A long answer may then continue on later pages.
+    const protectedOpeningHeight =
+      PART_TITLE_GAP +
+      minimumFieldOpeningHeight(
+        firstLayout.promptLines,
+        firstLayout.answerLines
+      );
+
+    ensureSpace(protectedOpeningHeight);
 
     page.drawText(part.title, {
       x: MARGIN_LEFT,
@@ -393,45 +514,17 @@ async function buildChooseMePagesDoc(
       font: fontBold,
       color: LABEL_COLOR,
     });
-    y -= 26;
+    y -= PART_TITLE_GAP;
 
-    for (const field of part.fields) {
-      const promptLines = wrapText(field.prompt, fontBody, 12, CONTENT_WIDTH);
-      const answer = safe(inputs[field.key]);
-      const quoted = `\u201C${answer}\u201D`;
-      const answerLines = wrapText(quoted, fontItalic, 12, CONTENT_WIDTH - 12);
+    // The protected-opening calculation already guaranteed that the
+    // first prompt and the opening of its answer fit with the heading.
+    drawField(firstField, true);
 
-      ensureSpace(promptLines.length * 17 + answerLines.length * 17 + 20);
-
-      for (const line of promptLines) {
-        page.drawText(line, {
-          x: MARGIN_LEFT,
-          y,
-          size: 12,
-          font: fontBody,
-          color: TEXT_COLOR,
-        });
-        y -= 17;
-      }
-
-      y -= 4;
-
-      for (const line of answerLines) {
-        ensureSpace(17);
-        page.drawText(line, {
-          x: MARGIN_LEFT + 12,
-          y,
-          size: 12,
-          font: fontItalic,
-          color: QUOTE_COLOR,
-        });
-        y -= 17;
-      }
-
-      y -= 20;
+    for (const field of part.fields.slice(1)) {
+      drawField(field);
     }
 
-    y -= 10;
+    y -= PART_GAP;
   }
 
   drawFooter(page);
