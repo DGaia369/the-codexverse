@@ -1,4 +1,3 @@
-@AGENTS.md
 # Paste near the top of CLAUDE.md
 
 ## Constitutional Repository Rules

@@ -24,6 +24,18 @@
  *   q5_non_negotiable -> "What became non-negotiable:"
  */
 
+/**
+ * CANON
+ *
+ * This module generates Recognition Records™.
+ *
+ * Recognition Record™ is the canonical participant artifact.
+ *
+ * Every Recognition Record™ becomes part of the Library of Yourself™,
+ * the participant-facing collection that houses those artifacts across
+ * pathways and inheritances.
+ */
+
 import {
   PDFDocument,
   rgb,
@@ -292,8 +304,8 @@ const WRITING_PARTS: WritingPartSpec[] = [
 const CHOOSE_ME_TOP_MARGIN = 100;
 const CHOOSE_ME_BOTTOM_LIMIT = 110;
 
-/**
- * Builds the completed "I Choose Me" writing pages inside a fresh
+ /**
+ * Builds the completed Library of Yourself™ pages inside a fresh
  * PDFDocument, one continuous flow across as many pages as the
  * participant's own words require. Returns that document, ready to
  * have its pages copied into the main declaration document.
@@ -552,7 +564,7 @@ async function buildChooseMePagesDoc(
  *   3: The Evidence You Carried Through   <-- NEW
  *   4: Part One: The Interruption
  *   ... (rest unchanged) ...
- *   N-1: I Choose Me — completed writing (one or more pages)  <-- NEW
+ *   N-1: the Library of Yourself™ — completed writing pages  <-- NEW
  *   N: Closing (Once you see it...)
  */
 export async function buildPersonalizedDeclaration(
@@ -593,7 +605,7 @@ export async function buildPersonalizedDeclaration(
   const middlePages = await outputDoc.copyPages(baseDoc, middleIndices);
   middlePages.forEach((p) => outputDoc.addPage(p));
 
-  // Insert the completed "I Choose Me" writing, if the Declaration has
+  // Insert the completed Library of Yourself™ writing, if the Declaration has
   // been sealed and its answers were passed in
   if (writingInputs) {
     const chooseMeDoc = await buildChooseMePagesDoc(writingInputs);
