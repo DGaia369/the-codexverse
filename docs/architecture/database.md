@@ -42,11 +42,28 @@ Detailed schema should be documented from Supabase before being treated as compl
 
 ## Pathway Two™: ReMEMBER™ tables
 
-**Status:** Approved architecture. Not yet applied to Supabase. Not yet verified.
+**Status:** Verified Live. Applied manually through the Supabase Dashboard SQL Editor.
 
-**Migration file:** `supabase/migrations/20260728_create_remember_tables.sql`
+**Application date:** July 28, 2026
+**Verification date:** July 28, 2026
 
-This is the first repository-tracked Supabase migration. No `supabase/migrations` directory, and no migration-file workflow of any kind, existed in this repository before this file was created. Every table described elsewhere in this document (`returns`, `declarations`, `pathway_two_agreements`, `loops`, `participant_flows`, `welcome_flows`, `scheduled_emails`, and others referenced only in code) was created directly against Supabase and remains undocumented at the schema level here. This migration does not change that for existing tables — it only establishes the workflow going forward, for `remember_sessions` and `remember_responses`.
+**Migration file:** `supabase/migrations/20260728_create_remember_tables.sql` — this file remains the authoritative record of the executed SQL and was not altered after execution. It is the first repository-tracked Supabase migration. No `supabase/migrations` directory, and no migration-file workflow of any kind, existed in this repository before this file was created. No Supabase CLI migration history exists for this change, because it was applied manually through the Dashboard SQL Editor rather than `supabase db push`. Every table described elsewhere in this document (`returns`, `declarations`, `pathway_two_agreements`, `loops`, `participant_flows`, `welcome_flows`, `scheduled_emails`, and others referenced only in code) was created directly against Supabase and remains undocumented at the schema level here. This migration does not change that for existing tables — it establishes the tracked-migration workflow going forward, for `remember_sessions` and `remember_responses` only.
+
+**Verification evidence** (read-only query against the live project, July 28, 2026):
+
+| Check | Result |
+|---|---|
+| `public.remember_sessions` exists | yes |
+| `public.remember_responses` exists | yes |
+| `remember_sessions` column count | 11 |
+| `remember_responses` column count | 8 |
+| Row Level Security enabled, `remember_sessions` | true |
+| Row Level Security enabled, `remember_responses` | true |
+| Named indexes matched | 4 of 4 expected |
+| Named constraints matched | 5 of 5 expected |
+| Direct-access policies | 0 (intended — see Row Level Security posture below) |
+
+See `docs/history/2026-07-28-remember-database-foundation-applied.md` for the full provenance record of this application.
 
 ### `remember_sessions`
 
