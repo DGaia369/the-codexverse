@@ -152,6 +152,14 @@ Preserves provenance.
 
 History records decisions, chronology, and constitutional evolution.
 
+History documents how the repository arrived at its current constitutional state.
+
+History never supersedes current constitutional authority.
+
+When historical records differ from current Governance or Canon, the current governing layer controls.
+
+Historical records remain valuable because they preserve the reasoning, evolution, and provenance of constitutional decisions.
+
 ---
 
 # Repository Governance

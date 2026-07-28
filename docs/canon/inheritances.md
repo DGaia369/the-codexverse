@@ -26,7 +26,14 @@ The completed Declaration™ becomes a Recognition Record™ and is part of the 
 
 ## Second Inheritance™
 
-**Status:** Not yet defined
+**Pathway:** Pathway Two™: ReMEMBER™  
+**Status:** Intentionally Undefined
+
+The Second Inheritance™ has not yet been constitutionally named or defined.
+
+Earlier proposals, including the Naming™ and Who Answered For Me™, remain preserved in Source, Excavations, and History.
+
+Neither proposal is canon.
 
 ### Canon boundary
 

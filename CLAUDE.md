@@ -22,3 +22,15 @@ If implementation conflicts with canon or standards, do not silently fix, reinte
 Only Diana Francis may lock, amend, retire, or supersede canon.
 
 At the end of every material work session, complete `docs/SESSION-CLOSE.md` and update the relevant documentation before treating the work as complete.
+
+## History
+
+Preserves provenance.
+
+History records decisions, chronology, and constitutional evolution.
+
+History preserves constitutional evolution.
+
+History never supersedes current constitutional authority.
+
+When historical documents conflict with current Governance or Canon, the current governing layer controls.

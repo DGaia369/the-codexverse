@@ -169,6 +169,10 @@ Did repository hierarchy drift?
 
 Unresolved governance questions?
 
+Historical authority interpreted correctly?
+
+Yes / No
+
 Evidence:
 
 ---

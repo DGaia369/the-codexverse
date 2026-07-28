@@ -31,8 +31,13 @@ The participant completes a full victory and receives the First Inheritance™.
 
 ## Pathway Two™
 
-**Name:** ReMEMBER  
-**Status:** Name and direction locked. Full architecture still in development.
+**Name:** ReMEMBER™
+
+**Core Outcome:** Wholeness
+
+The participant gathers back the pieces of herself scattered across roles, relationships, expectations, adaptations, and patterns of self-abandonment.
+
+The Second Inheritance™ remains intentionally undefined.
 
 ### Core movement
 
