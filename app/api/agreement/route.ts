@@ -1,5 +1,6 @@
-import { createClient } from '@supabase/supabase-js';
+import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import { NextRequest, NextResponse } from 'next/server';
+import { createServerSupabaseClient } from '@/utils/supabase/server';
 import {
   pickRandom,
   noticingVariants,
@@ -11,9 +12,9 @@ import {
 // Vercel's build-time page data collection will throw if env vars
 // are not present in that build worker context (same pattern as the
 // Resend client and the /guided Supabase client fixed earlier).
-let supabaseClient: any = null;
+let supabaseClient: SupabaseClient | null = null;
 
-function getSupabaseClient() {
+function getSupabaseClient(): SupabaseClient {
   if (!supabaseClient) {
     supabaseClient = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -21,6 +22,46 @@ function getSupabaseClient() {
     );
   }
   return supabaseClient;
+}
+
+// Ownership: the authenticated participant's email (server-verified via
+// auth.getUser(), never client-supplied) must match a `returns.email` row
+// for the requested session_id — the same ownership relationship used by
+// app/api/declaration/route.ts, app/api/declaration-writing/route.ts, and
+// app/api/declaration/pdf/route.ts. session_id is always set to the
+// authenticated user's own id at creation time (see app/begin/page.tsx),
+// so a legitimate participant's own session_id always has a matching
+// `returns` row by the time the Agreement™ (/tier-2, itself already
+// Proxy-protected) is reached. A session that does not exist and a
+// session owned by someone else are deliberately indistinguishable to the
+// caller.
+async function getAuthenticatedEmail(): Promise<string | null> {
+  const authClient = await createServerSupabaseClient();
+  const {
+    data: { user },
+  } = await authClient.auth.getUser();
+
+  return user?.email ? user.email.toLowerCase() : null;
+}
+
+async function verifyOwnership(
+  supabase: SupabaseClient,
+  sessionId: string,
+  email: string
+): Promise<boolean> {
+  const { data, error } = await supabase
+    .from('returns')
+    .select('session_id')
+    .eq('session_id', sessionId)
+    .eq('email', email)
+    .maybeSingle();
+
+  if (error) {
+    console.error('Agreement ownership check failed:', error);
+    return false;
+  }
+
+  return !!data;
 }
 
 // GET /api/agreement?session_id=xxx
@@ -37,7 +78,25 @@ export async function GET(req: NextRequest) {
       );
     }
 
+    const email = await getAuthenticatedEmail();
+
+    if (!email) {
+      return NextResponse.json(
+        { ok: false, error: 'Authentication required' },
+        { status: 401 }
+      );
+    }
+
     const supabase = getSupabaseClient();
+
+    const owned = await verifyOwnership(supabase, sessionId, email);
+
+    if (!owned) {
+      return NextResponse.json(
+        { ok: false, error: 'Agreement record not found' },
+        { status: 404 }
+      );
+    }
 
     const { data, error } = await supabase
       .from('pathway_two_agreements')
@@ -70,7 +129,7 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { session_id, email, source, door, pathway } = body;
+    const { session_id, source, door, pathway } = body;
 
     if (!session_id) {
       return NextResponse.json(
@@ -79,7 +138,25 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    const authedEmail = await getAuthenticatedEmail();
+
+    if (!authedEmail) {
+      return NextResponse.json(
+        { ok: false, error: 'Authentication required' },
+        { status: 401 }
+      );
+    }
+
     const supabase = getSupabaseClient();
+
+    const owned = await verifyOwnership(supabase, session_id, authedEmail);
+
+    if (!owned) {
+      return NextResponse.json(
+        { ok: false, error: 'Agreement record not found' },
+        { status: 404 }
+      );
+    }
 
     // Check for an existing record first. Randomize once, persist
     // immediately, return consistently.
@@ -108,7 +185,7 @@ export async function POST(req: NextRequest) {
     const { data: created, error: insertError } = await supabase
       .from('pathway_two_agreements')
       .insert({
-        email: email ?? null,
+        email: authedEmail,
         session_id,
         source: source ?? null,
         door: door ?? null,
@@ -159,7 +236,25 @@ export async function PATCH(req: NextRequest) {
       );
     }
 
+    const authedEmail = await getAuthenticatedEmail();
+
+    if (!authedEmail) {
+      return NextResponse.json(
+        { ok: false, error: 'Authentication required' },
+        { status: 401 }
+      );
+    }
+
     const supabase = getSupabaseClient();
+
+    const owned = await verifyOwnership(supabase, session_id, authedEmail);
+
+    if (!owned) {
+      return NextResponse.json(
+        { ok: false, error: 'Agreement record not found' },
+        { status: 404 }
+      );
+    }
 
     const updates: Record<string, unknown> = {
       updated_at: new Date().toISOString(),

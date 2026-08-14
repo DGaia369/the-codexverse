@@ -6,9 +6,10 @@ import Link from 'next/link';
 export default async function EvidencePage({
   searchParams,
 }: {
-  searchParams: { session_id?: string };
+  searchParams: Promise<{ session_id?: string }>;
 }) {
-  const sessionId = searchParams.session_id;
+  const params = await searchParams;
+  const sessionId = params.session_id;
 
   if (!sessionId) {
     redirect('/record');
@@ -27,7 +28,7 @@ export default async function EvidencePage({
             cookiesToSet.forEach(({ name, value, options }) =>
               cookieStore.set(name, value, options)
             );
-          } catch (_e) {
+          } catch {
             // Server Component cannot set cookies.
             // Session reading still works correctly.
           }

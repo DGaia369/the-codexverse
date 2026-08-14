@@ -12,6 +12,21 @@
   --font-mono: var(--font-geist-mono);
 }
 
+/*
+ * Public-site tokens only. Namespaced (--cxv-public-*) and additive: nothing
+ * in the immersive experience references these variables, so defining them
+ * has no visual effect on any existing page. Values are read directly off
+ * the approved brand identity already in use throughout the immersive
+ * experience (Phoenix Gold #d7ba7d, cream #F4EDE0, warm charcoal/black),
+ * not newly invented. Do not consume these from immersive routes.
+ */
+:root {
+  --cxv-public-charcoal: #0a0a0f;
+  --cxv-public-gold: #d7ba7d;
+  --cxv-public-gold-soft: #f3dfaa;
+  --cxv-public-cream: #F4EDE0;
+}
+
 @media (prefers-color-scheme: dark) {
   :root {
     --background: #0a0a0a;
