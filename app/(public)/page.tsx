@@ -1,85 +1,97 @@
 import Link from 'next/link';
-import Image from 'next/image';
+import { Heading, Body, ctaStyle, GOLD, CREAM } from '@/components/public/PublicProse';
 
-// STRUCTURAL SCAFFOLD ONLY — Public Website Phase 0.
+// Home — Public Website Phase 1B correction.
 //
-// No marketing copy has been written or approved for this page. Every
-// bracketed [PLACEHOLDER] block below exists only to verify layout,
-// spacing, and token usage, and must be replaced with Founder-approved
-// copy in a separate governed pass before this page is considered
-// participant-facing. Nothing here claims a brain-state mechanism, uses
-// motion, autoplay, parallax, or urgency — per the Visual Nervous System
-// requirement, this screen gives before it asks: it is deliberately inert.
+// Home is an arrival page: Hero, the First Recognition territory, and a
+// single closing invitation into the immersive experience. What the
+// codeXverse™ Is, Recognition Archaeology™, the Library of Yourself™, the
+// Pathways, Technology, and the Founder live on their own routes (see
+// app/(public)/experience, /pathways, /recognition-archaeology,
+// /library-of-yourself, /about) — reachable via the public header, which
+// is the sole room-navigation mechanism. Phase 1A had also repeated those
+// six destinations as a doorway list in Home's body; Phase 1B removes
+// that list as a duplicate of the header nav. No replacement
+// cards/tiles/menu was added, and no transitional copy was written — the
+// page now moves from Hero straight to the First Recognition to the
+// closing doorway, using spacing alone for the transition.
+//
+// The closing CTA routes through /enter (the existing magic-link entry),
+// not directly into /threshold — see components/public/PublicHeader.tsx
+// for the matching header change.
+
 export default function PublicHomePage() {
   return (
-    <main
-      style={{
-        flex: 1,
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: '96px 24px',
-        textAlign: 'center',
-      }}
-    >
-      <div style={{ maxWidth: '640px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '40px' }}>
-        <Image
-          src="/Logo.png"
-          alt="the codeXverse™"
-          width={1536}
-          height={1024}
-          priority
-          style={{ height: 'auto', width: '100%', maxWidth: '320px' }}
-        />
-
-        <div
-          style={{
-            border: '1px dashed rgba(215,186,125,0.35)',
-            borderRadius: '12px',
-            padding: '28px 24px',
-            width: '100%',
-          }}
-        >
+    <main>
+      {/* HERO */}
+      <section style={{ padding: '128px 24px 96px', textAlign: 'center' }}>
+        <div style={{ maxWidth: '720px', margin: '0 auto' }}>
           <p
             style={{
-              fontSize: '11px',
-              letterSpacing: '0.2em',
-              textTransform: 'uppercase',
-              color: 'rgba(215,186,125,0.7)',
-              margin: '0 0 12px',
+              fontSize: '13px',
+              letterSpacing: '0.22em',
+              color: GOLD,
+              margin: '0 0 32px',
             }}
           >
-            Placeholder — pending Founder-approved copy
+            the codeXverse™
           </p>
-          <p
+
+          <h1
             style={{
-              fontSize: '17px',
-              lineHeight: 1.7,
-              color: 'rgba(244,237,224,0.55)',
-              margin: 0,
+              fontSize: 'clamp(2rem, 5vw, 3.25rem)',
+              fontWeight: 500,
+              lineHeight: 1.3,
+              color: CREAM,
+              margin: '0 auto 40px',
+              maxWidth: '680px',
             }}
           >
-            [Public homepage headline and introduction — not yet written.
-            This block exists only to verify layout and spacing.]
+            What if the answer is not another version of you?
+          </h1>
+
+          <p style={{ fontSize: '18px', fontWeight: 300, lineHeight: 1.9, color: 'rgba(244,237,224,0.78)', margin: '0 auto 24px', maxWidth: '600px' }}>
+            You may have spent years becoming who life required you to be. Somewhere beneath all that adapting, carrying, continuing, and becoming useful, there is still a self who did not disappear.
+          </p>
+
+          <p style={{ fontSize: '18px', fontWeight: 300, lineHeight: 1.9, color: 'rgba(244,237,224,0.78)', margin: '0 auto', maxWidth: '600px' }}>
+            You do not have to invent her.
           </p>
         </div>
+      </section>
 
-        <Link
-          href="/threshold"
-          style={{
-            fontSize: '13px',
-            letterSpacing: '0.2em',
-            color: 'var(--cxv-public-gold-soft)',
-            textDecoration: 'none',
-            border: '1px solid rgba(215,186,125,0.4)',
-            borderRadius: '999px',
-            padding: '14px 32px',
-          }}
-        >
-          ENTER
-        </Link>
-      </div>
+      {/* THE FIRST RECOGNITION */}
+      <section style={{ padding: '72px 24px 120px' }}>
+        <div style={{ maxWidth: '720px', margin: '0 auto' }}>
+          <Heading>the First Recognition</Heading>
+          <Body>
+            Life can become so full of what needs you that continuing starts to feel automatic. Somewhere inside all that keeping up, carrying on, and getting through, it can become difficult to hear the part of you that has been there the whole time.
+          </Body>
+          <Body>
+            The question here is not simply what needs to change. It is what has become so familiar that you stopped seeing it.
+          </Body>
+        </div>
+      </section>
+
+      {/* FINAL DOORWAY — the page's only Enter the Threshold™ CTA */}
+      <section style={{ padding: '96px 24px 160px', textAlign: 'center' }}>
+        <div style={{ maxWidth: '560px', margin: '0 auto' }}>
+          <p style={{ fontSize: '20px', lineHeight: 1.8, color: CREAM, margin: '0 0 20px' }}>
+            Something brought you here.
+          </p>
+          <p style={{ fontSize: '17px', fontWeight: 300, lineHeight: 1.8, color: 'rgba(244,237,224,0.78)', margin: '0 0 20px' }}>
+            You do not have to know what it means yet.
+          </p>
+          <p style={{ fontSize: '17px', fontWeight: 300, lineHeight: 1.8, color: 'rgba(244,237,224,0.78)', margin: '0 0 48px' }}>
+            If something in you recognized itself while you were here, you can follow that.
+          </p>
+          {/* Routes through /enter, the existing magic-link entry, not
+              directly into /threshold. See header note above. */}
+          <Link href="/enter" style={ctaStyle}>
+            Enter the Threshold™
+          </Link>
+        </div>
+      </section>
     </main>
   );
 }

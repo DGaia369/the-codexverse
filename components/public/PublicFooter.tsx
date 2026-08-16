@@ -1,12 +1,20 @@
+import Link from 'next/link';
+
 // Public-site footer only. Do not import this into any immersive pathway
 // route. See app/(public)/layout.tsx for the only place this is wired in.
 //
-// Legal links (Terms, Privacy, etc.) do not exist yet — see the Public
-// Website Inventory report, §9. Left as marked, unlinked placeholders
-// rather than routed to pages that don't exist, and no legal copy is
-// invented here.
+// Legal routes now exist as structural shells (Phase 1A §10) — real
+// links, but each page carries only the "pending Founder-approved copy"
+// marker, not actual legal language. Do not add legal copy here or on
+// those pages until it is supplied and reviewed separately.
 
-const LEGAL_PLACEHOLDERS = ['Terms', 'Privacy', 'Access Policy'];
+const LEGAL_LINKS: { label: string; href: string }[] = [
+  { label: 'Terms of Use', href: '/terms' },
+  { label: 'Privacy', href: '/privacy' },
+  { label: 'Access & Refund Policy', href: '/access-refund-policy' },
+  { label: 'Library / Data & Portability', href: '/library-data-portability' },
+  { label: 'Accessibility / Support', href: '/accessibility-support' },
+];
 
 export default function PublicFooter() {
   return (
@@ -21,12 +29,10 @@ export default function PublicFooter() {
         style={{
           maxWidth: '1200px',
           margin: '0 auto',
-          padding: '32px 24px',
+          padding: '40px 24px',
           display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          flexWrap: 'wrap',
-          gap: '16px',
+          flexDirection: 'column',
+          gap: '20px',
         }}
       >
         <p
@@ -40,20 +46,21 @@ export default function PublicFooter() {
           the codeXverse™
         </p>
 
-        <div style={{ display: 'flex', gap: '18px', flexWrap: 'wrap' }}>
-          {LEGAL_PLACEHOLDERS.map((label) => (
-            <span
-              key={label}
-              aria-disabled="true"
-              title="Not yet published — placeholder"
+        <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap' }}>
+          {LEGAL_LINKS.map((link) => (
+            <Link
+              key={link.href}
+              href={link.href}
+              className="hover:opacity-70 transition-opacity"
               style={{
                 fontSize: '11px',
-                letterSpacing: '0.08em',
-                color: 'rgba(244,237,224,0.28)',
+                letterSpacing: '0.06em',
+                color: 'rgba(244,237,224,0.4)',
+                textDecoration: 'none',
               }}
             >
-              {label}
-            </span>
+              {link.label}
+            </Link>
           ))}
         </div>
       </div>

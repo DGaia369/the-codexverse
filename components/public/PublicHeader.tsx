@@ -6,22 +6,33 @@ import Link from 'next/link';
 // not inherit public marketing navigation. See app/(public)/layout.tsx for
 // the only place this is wired in.
 //
-// The five interior links below (The Experience, Pathways, Recognition
-// Archaeology™, the Library of Yourself™, Our Promise, About) have no
-// destination page yet. They are structural placeholders only — marked
-// visibly as "soon" and left unlinked (href="#") rather than pointed at a
-// route that doesn't exist, so this scaffold never ships a dead link.
-// Building those pages, and writing the copy for them, is a separate
-// governed pass.
+// All six destinations below now have a real page under app/(public)/
+// (see Public Website Phase 1 restructuring) and are real links. Our
+// Promise is a structural shell pending Founder-approved copy — that's a
+// content-completeness state, not a routing one, so it links normally
+// rather than being marked "soon." Lexicon is intentionally not in this
+// nav (Phase 1A).
+//
+// Lowercase-article naming rule (Phase 1A): a canonical name beginning
+// with "the" keeps the lowercase "t" even in navigation. "Recognition
+// Archaeology™", "Our Promise", and "About" do not begin with "the" and
+// are unaffected.
 
-const PLACEHOLDER_LINKS = [
-  'The Experience',
-  'Pathways',
-  'Recognition Archaeology™',
-  'the Library of Yourself™',
-  'Our Promise',
-  'About',
+const NAV_LINKS: { label: string; href: string }[] = [
+  { label: 'the Experience', href: '/experience' },
+  { label: 'the Pathways', href: '/pathways' },
+  { label: 'Recognition Archaeology™', href: '/recognition-archaeology' },
+  { label: 'the Library of Yourself™', href: '/library-of-yourself' },
+  { label: 'Our Promise', href: '/our-promise' },
+  { label: 'About', href: '/about' },
 ];
+
+const navLinkStyle: React.CSSProperties = {
+  fontSize: '12px',
+  letterSpacing: '0.08em',
+  color: 'rgba(244,237,224,0.7)',
+  textDecoration: 'none',
+};
 
 export default function PublicHeader() {
   return (
@@ -67,26 +78,15 @@ export default function PublicHeader() {
             flexWrap: 'wrap',
           }}
         >
-          {PLACEHOLDER_LINKS.map((label) => (
-            <span
-              key={label}
-              aria-disabled="true"
-              title="Not yet built — placeholder"
-              style={{
-                fontSize: '12px',
-                letterSpacing: '0.08em',
-                color: 'rgba(244,237,224,0.35)',
-                cursor: 'default',
-                display: 'inline-flex',
-                alignItems: 'baseline',
-                gap: '6px',
-              }}
+          {NAV_LINKS.map((link) => (
+            <Link
+              key={link.href}
+              href={link.href}
+              className="hover:opacity-70 transition-opacity"
+              style={navLinkStyle}
             >
-              {label}
-              <span style={{ fontSize: '9px', letterSpacing: '0.1em', color: 'rgba(215,186,125,0.4)' }}>
-                soon
-              </span>
-            </span>
+              {link.label}
+            </Link>
           ))}
 
           <Link
@@ -103,8 +103,12 @@ export default function PublicHeader() {
             Return
           </Link>
 
+          {/* Routes through the existing magic-link entry (/enter), not
+              directly into /threshold — an unauthenticated visitor must
+              pass through authentication before the immersive experience.
+              See Phase 1A directive §2. */}
           <Link
-            href="/threshold"
+            href="/enter"
             style={{
               fontSize: '12px',
               letterSpacing: '0.15em',

@@ -16,7 +16,16 @@ const PROTECTED = [
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  const isProtected = PROTECTED.some((path) => pathname.startsWith(path));
+  // Exact match or a genuine subpath (i.e. requires the trailing slash),
+  // not a bare prefix — a plain startsWith() collided with unrelated
+  // routes that merely share a prefix (e.g. the public site's /pathways
+  // was being caught by '/pathway' and redirected to /enter). The
+  // existing separate '/return-complete' entry above already worked
+  // around this same class of collision with '/return'; this generalizes
+  // that fix to every entry instead of requiring one-off additions.
+  const isProtected = PROTECTED.some(
+    (path) => pathname === path || pathname.startsWith(`${path}/`)
+  );
   if (!isProtected) return NextResponse.next();
 
   const response = NextResponse.next({
