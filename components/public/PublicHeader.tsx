@@ -90,7 +90,7 @@ export default function PublicHeader() {
           ))}
 
           <Link
-            href="/enter"
+            href="/begin"
             style={{
               fontSize: '12px',
               letterSpacing: '0.1em',
