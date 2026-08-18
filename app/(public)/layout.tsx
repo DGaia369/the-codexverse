@@ -1,5 +1,24 @@
+import type { Metadata } from 'next';
 import PublicHeader from '@/components/public/PublicHeader';
 import PublicFooter from '@/components/public/PublicFooter';
+
+// Social/share metadata for the public site only. Scoped to this segment
+// (not the root layout) so it does not affect immersive pathway routes,
+// which sit outside the (public) route group and keep the root layout's
+// metadata. No Open Graph image is set here: no Founder-approved share
+// asset could be positively identified in the repository as of Public
+// Website v1.0.1 — see release continuity notes. Do not substitute an
+// unapproved image.
+export const metadata: Metadata = {
+  title: 'the codeXverse™ | Reclaim. Rebuild. Reveal.',
+  description:
+    'A Recognition Ecosystem™ for women at the crossroads. Recognition before transformation.',
+  openGraph: {
+    title: 'the codeXverse™ | Reclaim. Rebuild. Reveal.',
+    description:
+      'A Recognition Ecosystem™ for women at the crossroads. Recognition before transformation.',
+  },
+};
 
 // This layout applies ONLY to routes inside the (public) route group.
 // Route groups do not affect the URL — `(public)` is not part of the

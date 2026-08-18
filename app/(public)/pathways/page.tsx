@@ -32,6 +32,29 @@ export default function PathwaysPage() {
             </p>
           </div>
 
+          {/* Transition marker between passages — reuses the existing
+              canonical sigil asset (public/Sigil.png, already used in the
+              /begin arrival flow). Decorative only: no label, no copy. */}
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'center',
+              margin: '8px 0',
+            }}
+          >
+            <img
+              src="/Sigil.png"
+              alt=""
+              aria-hidden="true"
+              style={{
+                width: '56px',
+                height: 'auto',
+                opacity: 0.6,
+                mixBlendMode: 'lighten',
+              }}
+            />
+          </div>
+
           <div style={pathwayCardStyle}>
             <p style={pathwayLabelStyle}>Pathway Two™: ReMEMBER™</p>
             <p style={{ fontSize: '16px', lineHeight: 1.8, color: BODY_COLOR, margin: '0 0 24px' }}>

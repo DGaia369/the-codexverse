@@ -46,7 +46,7 @@ export default function Home() {
           </div>
 
           <Link
-            href="/begin"
+            href="/enter"
             className="inline-block text-sm tracking-[0.2em] transition-opacity duration-300 hover:opacity-60"
             style={{ color: '#d7ba7d' }}
           >

@@ -103,12 +103,12 @@ export default function PublicHeader() {
             Return
           </Link>
 
-          {/* Routes through the existing magic-link entry (/enter), not
-              directly into /threshold — an unauthenticated visitor must
-              pass through authentication before the immersive experience.
-              See Phase 1A directive §2. */}
+          {/* Routes directly into the immersive Threshold atmosphere
+              (public, unauthenticated). Threshold's own CTA is the
+              authentication gate into /enter — see app/threshold/page.tsx.
+              Public Website v1.0.1 arrival-choreography correction. */}
           <Link
-            href="/enter"
+            href="/threshold"
             style={{
               fontSize: '12px',
               letterSpacing: '0.15em',

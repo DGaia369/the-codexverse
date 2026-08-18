@@ -16,9 +16,10 @@ import { Heading, Body, ctaStyle, GOLD, CREAM } from '@/components/public/Public
 // page now moves from Hero straight to the First Recognition to the
 // closing doorway, using spacing alone for the transition.
 //
-// The closing CTA routes through /enter (the existing magic-link entry),
-// not directly into /threshold — see components/public/PublicHeader.tsx
-// for the matching header change.
+// The closing CTA routes directly into /threshold (the immersive arrival
+// atmosphere); Threshold's own CTA is the authentication gate into /enter.
+// See components/public/PublicHeader.tsx for the matching header change.
+// Public Website v1.0.1 arrival-choreography correction.
 
 export default function PublicHomePage() {
   return (
@@ -85,9 +86,8 @@ export default function PublicHomePage() {
           <p style={{ fontSize: '17px', fontWeight: 300, lineHeight: 1.8, color: 'rgba(244,237,224,0.78)', margin: '0 0 48px' }}>
             If something in you recognized itself while you were here, you can follow that.
           </p>
-          {/* Routes through /enter, the existing magic-link entry, not
-              directly into /threshold. See header note above. */}
-          <Link href="/enter" style={ctaStyle}>
+          {/* Routes directly into /threshold. See header note above. */}
+          <Link href="/threshold" style={ctaStyle}>
             Enter the Threshold™
           </Link>
         </div>
