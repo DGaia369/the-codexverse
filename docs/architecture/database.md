@@ -118,6 +118,37 @@ Row Level Security is enabled on both `remember_sessions` and `remember_response
 
 No reusable `updated_at` trigger function exists elsewhere in this repository. None is introduced by this migration. `updated_at` must be set explicitly by application code on every write, consistent with the existing `declarations` PATCH route.
 
+### Movement One v2.1 continuity additions — existence Founder-verified live, September 1, 2026
+
+**Status:** Existence confirmed live. Application date and method are not established by this verification.
+
+**Migration files** (repository definitions of intended structure; not independently re-verified live beyond the existence checks below):
+`supabase/migrations/20260805_create_remember_movement_progress.sql`
+`supabase/migrations/20260807_add_remember_session_continuity.sql`
+
+**Verification evidence** (Founder-run, read-only query against the live codexverse-core Supabase project via the Supabase Dashboard SQL Editor, September 1, 2026):
+
+| Check | Result |
+|---|---|
+| `public.remember_movement_progress` exists | true |
+| `remember_sessions.content_version` exists | true |
+| `remember_sessions.variant_assignments` exists | true |
+| `remember_sessions.viewed_checkpoints` exists | true |
+
+This verification confirms existence only. It does not independently confirm, for `remember_movement_progress` or the three `remember_sessions` columns above: column types, defaults, check constraints, unique constraints, indexes, Row Level Security enablement, or RLS policies. The two migration files above remain the repository's only record of intended structure for these items; unlike the July 28, 2026 verification recorded earlier in this document (which explicitly checked column counts, RLS status, named indexes, and named constraints), no equivalent structural verification has been performed for these additions as of this entry.
+
+### Movement Two: Separate the Self from the Role — local implementation, no schema change
+
+**Status:** Implemented locally, September 5, 2026. Not yet Founder-reviewed. Not deployed.
+
+Movement Two reuses `remember_sessions`, `remember_responses`, and `remember_movement_progress` exactly as they exist today. No migration was required.
+
+- `remember_sessions.current_movement_key` now also takes the value `separate_self_from_role`, alongside the existing `see_the_scattering`. The transition from one to the other happens application-side, in `utils/remember.ts`, the moment the participant's screen advance first crosses into a `m2_*` screen.
+- `remember_responses` gains seven new `prompt_key` values under `movement_key = 'separate_self_from_role'`: `room_identity`, `genuinely_mine`, `role_requirement`, `harder_to_bring`, `mine_without_expectation`, `uncertain_without_role`, and `bedrock_response`. None collide with Movement One's existing prompt keys. The existing unique constraint on `(remember_session_id, movement_key, prompt_key)` already supports this.
+- `remember_movement_progress` gains a second row per session, for `movement_key = 'separate_self_from_role'`, created at the same movement-transition point described above and completed under the same rules as Movement One (queryable independent completion evidence, `remember_sessions.status`/`completed_at` untouched).
+
+See `docs/design-specifications/pathway-two-remember-movement-two-v0.1.md` for the full participant architecture and completion condition.
+
 ## Pending documentation
 
 - Full `declarations` schema
@@ -127,3 +158,4 @@ No reusable `updated_at` trigger function exists elsewhere in this repository. N
 - Row-level security policies for `returns`, `declarations`, `pathway_two_agreements`, and other existing tables
 - Record ownership rules for tables that predate this migration
 - Future Library indexing strategy
+- Full structural verification (column types, defaults, constraints, indexes, Row Level Security) for `remember_movement_progress` and the three Movement One v2.1 continuity columns on `remember_sessions`, beyond the existence confirmed September 1, 2026

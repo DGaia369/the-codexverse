@@ -75,3 +75,15 @@ Remain Excavation.
 Do not promote the Naming™ to canon.
 
 Do not define it as the Second Inheritance™ without a new constitutional ruling.
+
+---
+
+## SECOND INHERITANCE™ SIGNAL — UNDEFINED / NOT FOUNDER-LOCKED
+
+**Recorded:** September 10, 2026, during the Movement Two Bedrock Final Correction pass.
+
+A Founder excavation signal has surfaced around self-witnessing, capacity, internal authority, ownership of recognition, interpretive sovereignty, awareness, and freedom.
+
+This is not Canon and not implementation scope. It does not name, define, or imply a function, form, or content for the Second Inheritance™. It is recorded here only so the signal itself is not lost, per the same excavation discipline as the rest of this document. No participant-facing copy exists from this material. No Library of Yourself™ artifact was created from it. Witness Moments are not equated with the Second Inheritance™. "Authorship" continues to belong to Pathway Three™: the Agreement™, per canon ("Agreement is authorship," `docs/canon/recognition-laws.md`), not to Pathway Two™.
+
+The Second Inheritance™ remains intentionally undefined, per `docs/canon/inheritances.md`.

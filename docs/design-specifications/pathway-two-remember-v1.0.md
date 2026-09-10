@@ -27,6 +27,10 @@ This document is versioned. Future changes proceed by governed amendment, not si
 |---|---|---|---|---|
 | 1.0 | July 2026 | Initial approved design specification. Entry Threshold and Movement One copy locked. Movements Two through Six documented as proposed architecture. | Baseline | Diana Francis |
 | 1.0 | August 5, 2026 | Removed unsupported statements assigning a known function, form, or placement to the Second Inheritance™ across the Explicit Exclusions, Movement Two, and Movement Six sections, and broadened the Part Eleven undefined-state language to match the full scope of the Founder ruling. Reaffirmed that the Second Inheritance™ remains intentionally undefined. | Amendment | Diana Francis |
+| 1.0 | August 7, 2026 | Part Three: Movement One (See the Scattering) locked participant copy, screen sequence, response count, and completion condition are superseded by `docs/design-specifications/pathway-two-remember-movement-one-v2.1.md` (Founder Approved and Locked; verified SHA-256 `ee6042f84070139b786bea93bf4409cd8c8ebcd2cba532db62c2033d32482177`). Locked prompt copy, screen sequence, response count (six responses to seven), recognition architecture (Recognition Mirror™, Bedrock, Recognition Lens added), and the completion condition all changed; classified Major under this document's own Versioning by Architectural Impact convention. Part Three's historical body text below is preserved unedited as provenance and is no longer the governing Movement One copy. Full Design Specification v2.0 consolidation (folding Movement One v2.1 into this document's own structure and incrementing its Version field) is deferred to a later governed pass; this document's Version remains 1.0 in the interim. | Major (superseded, consolidation deferred) | Diana Francis |
+| 1.0 | September 5, 2026 | Part Four: Movement Two (Separate the Self from the Role) proposed architecture and sample copy are superseded by `docs/design-specifications/pathway-two-remember-movement-two-v0.1.md`, a local implementation built from Diana's Movement Two implementation directive of the same date. That document is partially Founder-locked and partially approved working copy pending Founder walkthrough and ruling — see its own status markers. Screen sequence, prompt copy, the Differentiation Recognition Mirror™, Bedrock, Recognition Lens, and completion condition are all newly implemented; this would classify Major under this document's own Versioning by Architectural Impact convention, once approved. Part Four's historical body text below is preserved unedited as provenance and is no longer the governing Movement Two direction. Full Design Specification v2.0 consolidation remains deferred to a later governed pass, as noted in the entry above; this document's Version remains 1.0 in the interim. | Major (superseded, since Founder Locked) | Diana Francis |
+| 1.0 | September 9, 2026 | Movement Two (Separate the Self from the Role) participant copy is now Founder Locked, from Diana's Movement Two Final Founder Correction Package of the same date, recorded in `docs/design-specifications/pathway-two-remember-movement-two-v1.0-founder-locked-2026-09-09.md`. This supersedes the September 5, 2026 entry above: `pathway-two-remember-movement-two-v0.1.md` is now marked superseded (preserved as provenance) rather than pending Founder ruling. Six writing-moment questions, three witnesses, the Differentiation Recognition Mirror™ labels and closing line, the Bedrock question and its new witness-return behavior, the Recognition Lens, and the closing were all reworded or restructured; screen sequence and response storage keys are unchanged. Classified Major under this document's own Versioning by Architectural Impact convention. Part Four's historical body text below remains unedited as provenance. | Major | Diana Francis |
+| 1.0 | September 10, 2026 | Movement Two's Bedrock question was amended to "What do you know now?" (recorded as an amendment within `pathway-two-remember-movement-two-v1.0-founder-locked-2026-09-09.md` itself, superseded wording preserved inline). Diana then completed the final end-to-end Movement Two walkthrough and issued a Founder Close: Movement Two status is now **IMPLEMENTATION PASSED / FOUNDER-LOCKED / CLOSED**. It may be reopened only for a genuine implementation defect, broken continuity, accessibility failure, constitutional conflict, or a further Founder-directed amendment, not for alternate wording or a new design idea. See `docs/history/2026-09-10-movement-two-closed.md` for the full closure record. No participant-facing copy other than the Bedrock question changed in this entry. | Closure | Diana Francis |
 
 *Future amendments are appended above this line, never inserted retroactively, so the history reads in the order decisions actually happened.*
 
@@ -34,20 +38,29 @@ This document is versioned. Future changes proceed by governed amendment, not si
 
 ## Status of This Document
 
-This is a **design artifact**, not an implementation specification. It defines the complete participant journey for Pathway Two™: ReMEMBER™, from Entry Threshold through Completion Recognition, across all six movements. It contains no production code and no schema beyond what has already been approved for Movement One.
+This is a **design artifact**, not an implementation specification. It defines the complete participant journey for Pathway Two™: ReMEMBER™, from Entry Threshold through Completion Recognition, across all six movements. It contains no production code and no schema beyond what has already been approved for Movement One and Movement Two.
 
 **Status by section:**
 
 | Section | Status |
 |---|---|
 | Entry Threshold | Locked |
-| Movement One: See the Scattering | Locked |
-| Movements Two through Six | Proposed Architecture — functional design only, no participant-facing copy approved |
+| Movement One: See the Scattering | Locked; superseded by Founder-locked Movement One v2.1 |
+| Movement Two: Separate the Self from the Role | IMPLEMENTATION PASSED / FOUNDER-LOCKED / CLOSED (2026-09-10); superseded by Founder-locked Movement Two v1.0 (2026-09-09, amended 2026-09-10) |
+| Movements Three through Six | Proposed Architecture — functional design only, no participant-facing copy approved |
 | Completion Recognition | Proposed Architecture |
 | Recognition Records / artifacts | Reserved slots only — not defined |
-| Data model | Extends the approved Movement One direction by description only — introduces no new schema decision beyond Movement One |
+| Data model | Extends the approved Movement One and Movement Two direction by description only — introduces no new schema decision beyond what those movements already use |
 
-Nothing marked "Proposed Architecture" may be treated as canon or built without its own explicit approval at the point that movement comes up for implementation.
+Nothing marked "Proposed Architecture" may be treated as canon or built without its own explicit approval at the point that movement comes up for implementation. Movement Two's local implementation is likewise not canon until Diana rules on it.
+
+---
+
+Movement One governing participant architecture:
+docs/design-specifications/pathway-two-remember-movement-one-v2.1.md
+
+Movement Two governing participant architecture (Founder Locked, 2026-09-09):
+docs/design-specifications/pathway-two-remember-movement-two-v1.0-founder-locked-2026-09-09.md
 
 ---
 
