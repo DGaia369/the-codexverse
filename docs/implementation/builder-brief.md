@@ -208,6 +208,8 @@ Do not redesign routing as part of resolving this ruling.
 
 This is a continuity/governance record only.
 
+**2026-09-14 status note:** the "reusable commerce/access architecture" this ruling anticipates now has its Phase 3 + Phase 3A database foundation live (`products`, `entitlements` — see the Commerce + Access Phase 3 + 3A Report below). Authorization composition (`authorizeRememberAccess` or equivalent) and route wiring have not been implemented. This ruling remains unresolved: do not wire `/record` or the public website to `/remember` yet.
+
 **Session-start requirement:** Claude Code must verify and refresh this section at the beginning of every implementation session before proceeding. A prior statement of a ruling, or of “None,” must never be carried forward without checking the current reconciliation reports, open-items register, latest History entries, and most recent founder rulings.
 
 **2026-09-10 — Library of Yourself™ Pathway Two™ continuity: next bounded architecture item, not yet implemented.**
@@ -359,6 +361,32 @@ The Library of Yourself™ currently presents only Pathway One™ (Return to Sel
 **Movement Three:** not opened; no participant copy, screens, database fields, migrations, or routes created for it.
 
 **Library of Yourself™ continuity question:** recorded only, per the directive, in `docs/history/2026-09-10-movement-two-closed.md` and this Builder Brief's Pending Founder Rulings section — not implemented. No Pathway Two card, artifact, Recognition Record™, or `/record` change was made.
+
+---
+
+## Commerce + Access Phase 3 + 3A Report
+
+**Date:** 2026-09-13 (Phase 3), 2026-09-14 (Phase 3A)
+**Branch:** `feature/pathway-two-remember`
+**Directive:** Diana's Commerce + Access Phase 2 entitlement design corrections, Phase 3 migration draft/safety pass/application, and Phase 3A integrity follow-up.
+**Files changed:**
+- `supabase/migrations/20260913_create_products_and_entitlements.sql` — created and applied. Establishes `products` (minimal product identity registry) and `entitlements` (participant access grants, independent of Pathway eligibility). Seeds exactly one product: `pathway-two-remember` / `Pathway Two™: ReMEMBER™` / `active`. No offer, price, or Founding Access data in either table.
+- `supabase/migrations/20260914040441_add_entitlement_integrity_constraints.sql` — created and applied. Adds `entitlements_expires_at_after_starts_at_check`; replaces `entitlements_revoked_at_matches_status_check` with the stronger `entitlements_revocation_integrity_check` in one atomic `ALTER TABLE` statement. Deliberately does not add an admin-grant provenance database constraint (Founder ruling — see file header and `docs/history/2026-09-14-commerce-access-entitlement-integrity-applied.md`).
+- `docs/architecture/database.md` — new "Commerce + Access: `products` and `entitlements`" section, including the Phase 3A subsection.
+- `docs/history/2026-09-13-commerce-access-entitlement-schema-applied.md`, `docs/history/2026-09-14-commerce-access-entitlement-integrity-applied.md` — created.
+- `docs/history/open-items.md` — item 17 (schema status and approved next implementation sequence), item 18 (Supabase migration-workflow normalization, deferred).
+
+**Schema changes:** Both migrations applied manually through the Supabase Dashboard SQL Editor and independently verified against live PostgreSQL system catalogs, per the established repository convention (no Supabase CLI project link exists).
+
+**Verified this session:** Live catalog verification for both migrations (constraint presence and definitions, FK behavior, RLS enablement and zero-policy posture, index non-uniqueness, seed content, zero-row `entitlements`). A high-effort manual code review of commit `0974d5263cc2704971c6f4b9ab0634b68175ea05` was also performed before push, which identified the two gaps Phase 3A closes plus several non-blocking observations (see that review for the full list, including already-Founder-ruled FK tradeoffs and a future index-ordering consideration).
+
+**Not implemented:** `utils/entitlements.ts` (still a 0-byte stub), any Founder/Admin grant path, `hasEffectiveEntitlement()`, authorization composition, and all route wiring. No checkout or payment-provider logic.
+
+**Next implementation phase:** Commerce + Access Phase 4 — Entitlement Service + Founder/Admin Grant Proof, starting with `utils/entitlements.ts`. Proof condition: a Founder/Admin grant produces a live entitlement row, and `hasEffectiveEntitlement()` returns true for it, before any commerce or Pathway authorization work is connected.
+
+**Outstanding blocker, unaffected by this work:** the proxy.ts/session-refresh gap (`docs/history/open-items.md`, item 16) remains OPEN and is a prerequisite before protected Commerce + Access entry is considered production-ready.
+
+**Deployment status:** Both migrations applied to the live Supabase project. Repository changes committed locally (`0974d5263cc2704971c6f4b9ab0634b68175ea05`, plus the Phase 3A commit). No application code, route, or participant-facing behavior was added or changed.
 
 ---
 

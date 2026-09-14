@@ -208,10 +208,10 @@ Product lifecycle status governs acquisition availability only. A `retired` prod
 | `source_type` | `text not null` | check constraint: `verified_acquisition` or `admin_grant` — records why the grant exists, not the entitlement status |
 | `status` | `text not null default 'active'` | check constraint: `active` or `revoked` — no `expired`, `pending`, `refunded`, or `cancelled` status exists |
 | `starts_at` | `timestamptz not null default now()` | |
-| `expires_at` | `timestamptz null` | null means no expiry |
+| `expires_at` | `timestamptz null` | null means no expiry; check constraint `entitlements_expires_at_after_starts_at_check` (added Phase 3A) requires it null or strictly after `starts_at` |
 | `granted_by_user_id` | `uuid null` | references `auth.users(id) on delete set null` — identifies the human Founder/Admin who performed the grant; null for future system-generated grants |
-| `revoked_at` | `timestamptz null` | check constraint (`entitlements_revoked_at_matches_status_check`) requires it null iff `status = 'active'`, and not null iff `status = 'revoked'` |
-| `revocation_reason` | `text null` | unconstrained vocabulary in V1 |
+| `revoked_at` | `timestamptz null` | governed jointly with `revocation_reason` by check constraint `entitlements_revocation_integrity_check` (Phase 3A) — see below |
+| `revocation_reason` | `text null` | governed jointly with `revoked_at` by `entitlements_revocation_integrity_check` (Phase 3A); vocabulary remains unconstrained in V1 beyond non-empty/non-whitespace when present |
 | `created_at` / `updated_at` | `timestamptz not null default now()` | `updated_at` is set explicitly by application code on write; no database trigger is defined (same convention as `remember_sessions`) |
 
 No price, currency, affiliate data, gift token, licence-seat data, or generic JSONB metadata column exists on this table.
@@ -239,6 +239,36 @@ Row Level Security is enabled on both `products` and `entitlements`. No policies
 ### Scope of this phase
 
 No API routes, no authorization composition logic (`authorizeRememberAccess` or equivalent), no checkout, no payment-provider logic, and `utils/entitlements.ts` remains an unimplemented stub. This phase was database structure only. See `docs/history/2026-09-13-commerce-access-entitlement-schema-applied.md` for the full application and verification record, and `docs/history/open-items.md` (item 17) for the tracked next state.
+
+### Phase 3A: entitlement integrity constraints — Verified Live
+
+**Status:** Verified Live. Applied manually through the Supabase Dashboard SQL Editor.
+
+**Application date:** September 14, 2026
+**Verification date:** September 14, 2026
+
+**Migration file:** `supabase/migrations/20260914040441_add_entitlement_integrity_constraints.sql` — additive follow-up to `20260913_create_products_and_entitlements.sql`, which remains frozen and unaltered. This follow-up migration uses a full `YYYYMMDDHHMMSS` UTC timestamp rather than the date-only prefix used by every migration before it, so its version sorts unambiguously after the same-day original.
+
+This migration closed two of the data-integrity gaps identified by pre-push review of commit `0974d5263cc2704971c6f4b9ab0634b68175ea05`:
+
+1. **Expiry integrity** — added `entitlements_expires_at_after_starts_at_check`: `expires_at IS NULL OR expires_at > starts_at`. Prevents a grant from being created with an expiry at or before its own start time.
+2. **Revocation audit integrity** — dropped `entitlements_revoked_at_matches_status_check` and replaced it, in one atomic `ALTER TABLE` statement (drop and add as two actions of the same statement, so there is no window in which neither or only the old constraint exists), with `entitlements_revocation_integrity_check`:
+   - `status = 'active'` → `revoked_at IS NULL AND revocation_reason IS NULL`
+   - `status = 'revoked'` → `revoked_at IS NOT NULL AND revocation_reason IS NOT NULL AND revocation_reason ~ '[^[:space:]]'` (at least one non-whitespace character; a POSIX regex was used deliberately in place of `btrim`, since `btrim` only strips leading/trailing space padding and would not reject a tab- or newline-only value)
+
+A third gap identified by the same review — requiring `granted_by_user_id` to be non-null whenever `source_type = 'admin_grant'` — was deliberately **not** enforced at the database level, by Founder ruling: `granted_by_user_id → auth.users(id) on delete set null` is approved FK behavior, and a check constraint forcing that column non-null for `admin_grant` rows would conflict with Postgres's ability to set it null if the referenced `auth.users` row is later deleted. Real-grantor enforcement for `admin_grant` creation belongs in the Phase 4 application/service layer instead.
+
+**Verification evidence** (read-only query against live PostgreSQL system catalogs, run by Diana Francis via the Supabase Dashboard SQL Editor, September 14, 2026):
+
+| Check | Result |
+|---|---|
+| `entitlements_expires_at_after_starts_at_check` present | true |
+| `entitlements_revocation_integrity_check` present | true |
+| `entitlements_revoked_at_matches_status_check` present | false (successfully removed) |
+| `entitlements` row count | 0 |
+| Admin-grant provenance check constraint count | 0 (confirms none was introduced) |
+
+See `docs/history/2026-09-14-commerce-access-entitlement-integrity-applied.md` for the full application and verification record.
 
 ## Pending documentation
 
