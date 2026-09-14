@@ -149,6 +149,97 @@ Movement Two reuses `remember_sessions`, `remember_responses`, and `remember_mov
 
 See `docs/design-specifications/pathway-two-remember-movement-two-v0.1.md` for the full participant architecture and completion condition.
 
+## Commerce + Access: `products` and `entitlements`
+
+**Status:** Verified Live. Applied manually through the Supabase Dashboard SQL Editor.
+
+**Application date:** September 13, 2026
+**Verification date:** September 13, 2026
+
+**Migration file:** `supabase/migrations/20260913_create_products_and_entitlements.sql` — the authoritative record of the executed SQL, not altered after execution. Applied using the same manual Dashboard SQL Editor method as every prior migration in this repository (see "Application method" note under the July 28, 2026 ReMEMBER™ tables verification above); no Supabase CLI project link exists in this repository.
+
+**Verification evidence** (read-only query against live PostgreSQL system catalogs, run by Diana Francis via the Supabase Dashboard SQL Editor, September 13, 2026):
+
+| Check | Result |
+|---|---|
+| `public.products` exists | yes |
+| `public.entitlements` exists | yes |
+| Row Level Security enabled, `products` | true |
+| Row Level Security enabled, `entitlements` | true |
+| Participant-facing policies, `products` | 0 |
+| Participant-facing policies, `entitlements` | 0 |
+| `products_key_unique` constraint | present |
+| `products_status_check` constraint | present |
+| `entitlements_source_type_check` constraint | present |
+| `entitlements_status_check` constraint | present |
+| `entitlements_revoked_at_matches_status_check` constraint | present |
+| `entitlements.user_id → auth.users(id) on delete cascade` | present |
+| `entitlements.product_id → products(id) on delete restrict` | present |
+| `entitlements.granted_by_user_id → auth.users(id) on delete set null` | present |
+| `entitlements_user_product_idx` | present, non-unique |
+| `products` row count | 1 (seed only) |
+| `entitlements` row count | 0 |
+
+Column-level and seed-data verification was independently cross-checked via the service-role PostgREST endpoint (schema shape, nullability, and the single seeded product row), consistent with the catalog-level results above.
+
+### `products`
+
+| Column | Type | Notes |
+|---|---|---|
+| `id` | `uuid` | primary key, `default gen_random_uuid()` |
+| `key` | `text not null` | unique, stable machine-readable identity (`products_key_unique`) |
+| `name` | `text not null` | canonical display name |
+| `status` | `text not null default 'active'` | check constraint: `active` or `retired` |
+| `created_at` | `timestamptz not null default now()` | |
+
+`products` is a minimal, stable product identity registry only. It carries no offer, price, currency, description, or checkout data — Founding Access and its approved US$97 price are an offer against this product, not a property of the product record, and no offers table exists yet.
+
+Product lifecycle status governs acquisition availability only. A `retired` product status does not itself invalidate any participant's existing entitlement; entitlement validity is governed exclusively by the effective-entitlement rule below, unless a future Founder ruling explicitly changes that relationship.
+
+**Seed:** exactly one row — `key: pathway-two-remember`, `name: Pathway Two™: ReMEMBER™`, `status: active`. No Founding Access row and no price value are seeded or stored anywhere in this table.
+
+### `entitlements`
+
+| Column | Type | Notes |
+|---|---|---|
+| `id` | `uuid` | primary key, `default gen_random_uuid()` |
+| `user_id` | `uuid not null` | references `auth.users(id) on delete cascade` — the authoritative owning participant; required, since an unclaimed gift is not an entitlement |
+| `product_id` | `uuid not null` | references `products(id) on delete restrict` — restrict rather than cascade, since a product is expected to be retired via status, not deleted, and must never silently destroy entitlement history |
+| `source_type` | `text not null` | check constraint: `verified_acquisition` or `admin_grant` — records why the grant exists, not the entitlement status |
+| `status` | `text not null default 'active'` | check constraint: `active` or `revoked` — no `expired`, `pending`, `refunded`, or `cancelled` status exists |
+| `starts_at` | `timestamptz not null default now()` | |
+| `expires_at` | `timestamptz null` | null means no expiry |
+| `granted_by_user_id` | `uuid null` | references `auth.users(id) on delete set null` — identifies the human Founder/Admin who performed the grant; null for future system-generated grants |
+| `revoked_at` | `timestamptz null` | check constraint (`entitlements_revoked_at_matches_status_check`) requires it null iff `status = 'active'`, and not null iff `status = 'revoked'` |
+| `revocation_reason` | `text null` | unconstrained vocabulary in V1 |
+| `created_at` / `updated_at` | `timestamptz not null default now()` | `updated_at` is set explicitly by application code on write; no database trigger is defined (same convention as `remember_sessions`) |
+
+No price, currency, affiliate data, gift token, licence-seat data, or generic JSONB metadata column exists on this table.
+
+### Effective-entitlement rule
+
+Owned by application code, not enforced by this schema:
+
+```
+status = 'active'
+AND starts_at <= now()
+AND (expires_at IS NULL OR expires_at > now())
+```
+
+"Expired" is never a stored status — it is this predicate evaluating false because of `expires_at`.
+
+### Multiple entitlements
+
+No uniqueness constraint exists on `(user_id, product_id)`. A participant may hold more than one independent entitlement row for the same product (e.g. a Founding Access grant and a later organizational grant). `entitlements_user_product_idx` is a non-unique index supporting the "does at least one effective entitlement exist" lookup; revoking one row never removes another row's effectiveness.
+
+### Row Level Security posture
+
+Row Level Security is enabled on both `products` and `entitlements`. No policies are defined on either table. With RLS enabled and zero policies, the `anon` and `authenticated` Postgres roles are denied all access by default. The service-role client is the only intended access path in Version 1, matching the pattern established by `remember_sessions` and `remember_responses`.
+
+### Scope of this phase
+
+No API routes, no authorization composition logic (`authorizeRememberAccess` or equivalent), no checkout, no payment-provider logic, and `utils/entitlements.ts` remains an unimplemented stub. This phase was database structure only. See `docs/history/2026-09-13-commerce-access-entitlement-schema-applied.md` for the full application and verification record, and `docs/history/open-items.md` (item 17) for the tracked next state.
+
 ## Pending documentation
 
 - Full `declarations` schema
