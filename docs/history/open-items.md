@@ -60,22 +60,15 @@
     Currently open in Diana's editor. Left untouched; not yet a completed record.
 
 16. **Decouple Supabase session refresh from route protection**
-    `Status: OPEN`
+    `Status: RESOLVED (Phase 5A, 2026-09-14)`
     `Type: Authentication / session architecture`
-    `Runtime impact: UNVERIFIED`
-    `Priority: Must be resolved before protected Commerce + Access entry is considered production-ready.`
+    `Runtime impact: Source-verified fix; Set-Cookie refresh under an actual near-expiry token not directly observed (no such session state existed locally, and none was manufactured to force it).`
 
-    The current `proxy.ts` implementation couples Supabase session refresh to the internal `PROTECTED` route list.
+    Founder ruling: Option B, scoped. `proxy.ts` now carries a second, independent `REFRESH_ONLY` list (`/remember`, `/record`, `/record/evidence`) alongside the unchanged `PROTECTED` list. `REFRESH_ONLY` triggers Proxy's session-refresh branch but never Proxy's `/enter` redirect; each of those three pages keeps its own existing unauthenticated-participant redirect logic exactly as before. `PROTECTED`'s membership and meaning ("redirect unauthenticated requests to `/enter`") are unchanged. `/api/*` was not touched — Route Handlers already persist refreshed cookies correctly on their own.
 
-    Authenticated Server Component routes including `/remember` and `/record` are currently outside that coverage.
+    Verified locally: `/begin` (`PROTECTED`) still redirects to `/enter`; `/remember`, `/record`, `/record/evidence` (all `REFRESH_ONLY`) redirect to their own existing destinations, never to `/enter`; `/` and `/pathways` (neither list) make no Supabase call.
 
-    Before Commerce + Access authorization is wired to Pathway Two™: ReMEMBER™, review whether session refresh should:
-
-    A. be extended by adding specific protected routes, or
-
-    B. be separated from protected-route redirect logic so applicable dynamic requests receive session refresh independently from authorization routing.
-
-    See `docs/architecture/routing.md` ("Route Protection Mechanism") and `docs/architecture/session-management.md` ("Session Refresh Mechanism") for the verified technical findings this item is based on. Recorded 2026-09-10.
+    See `docs/architecture/routing.md` ("Route Protection Mechanism"), `docs/architecture/session-management.md` ("Session Refresh Mechanism"), and `docs/history/2026-09-14-session-refresh-separation-applied.md` for the full record. Recorded 2026-09-10. Resolved 2026-09-14.
 
 17. **Commerce + Access V1 entitlement schema and service (`products`, `entitlements`, `utils/entitlements.ts`)**
     `Status: Applied and Verified Live (Phase 3 + Phase 3A + Phase 4)`

@@ -42,9 +42,11 @@
 
 For paths matched by its internal `PROTECTED` list, `proxy.ts` constructs a Supabase SSR client bound to both the incoming request's cookies and the outgoing response's cookies, calls `supabase.auth.getUser()` (refreshing the session), and redirects unauthenticated requests to `/enter`.
 
-`PROTECTED` currently contains: `/begin`, `/return`, `/pathway`, `/door`, `/foundation`, `/guided`, `/next-step`, `/tier-2`, `/return-complete`.
+`PROTECTED` currently contains: `/begin`, `/return`, `/pathway`, `/door`, `/foundation`, `/guided`, `/next-step`, `/tier-2`, `/return-complete`. Membership and meaning are unchanged by the session-refresh separation below: a `PROTECTED` path still redirects an unauthenticated request to `/enter`.
 
-Paths not in `PROTECTED` — currently including `/remember`, `/record`, `/declaration`, `/between-threshold`, `/enter`, and every `/api/*` route — return immediately without any Supabase call. See `docs/architecture/session-management.md` ("Session Refresh Mechanism") for the session-refresh implication of this for `/remember` and `/record` specifically, and `docs/history/open-items.md` ("Decouple Supabase session refresh from route protection") for the unresolved architectural decision.
+**Session refresh separated from route protection (2026-09-14):** `proxy.ts` also carries a second, independent list, `REFRESH_ONLY` — currently `/remember`, `/record`, `/record/evidence` — for authenticated Server Component pages that need their Supabase session refreshed by Proxy (since a Server Component cannot persist a refreshed cookie itself) but must never be redirected to `/enter` by Proxy; each of these pages owns its own unauthenticated-participant redirect logic instead. A path matching either `PROTECTED` or `REFRESH_ONLY` triggers the session-refresh branch; only a `PROTECTED` match can trigger the `/enter` redirect. See `docs/architecture/session-management.md` ("Session Refresh Mechanism") and `docs/history/2026-09-14-session-refresh-separation-applied.md` for the full record.
+
+Paths in neither list — currently including `/declaration`, `/between-threshold`, `/enter`, and every `/api/*` route — return immediately without any Supabase call, unchanged from before this separation. `/api/*` routes were not part of the session-refresh gap and were not added to `REFRESH_ONLY`: their own Route Handler context already persists refreshed cookies correctly (Route Handlers, unlike Server Components, are permitted to write cookies).
 
 ## Routing principles
 

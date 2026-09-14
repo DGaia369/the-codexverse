@@ -413,6 +413,30 @@ The Library of Yourself™ currently presents only Pathway One™ (Return to Sel
 
 ---
 
+## Commerce + Access Phase 5A Report
+
+**Date:** 2026-09-14
+**Branch:** `feature/pathway-two-remember`
+**Directive:** Approved Session Refresh Separation architecture — resolve item 16 (`docs/history/open-items.md`) by structurally separating Supabase session refresh from Proxy route protection, without extending `PROTECTED`.
+**Files changed:**
+- `proxy.ts` — added an independent `REFRESH_ONLY` list (`/remember`, `/record`, `/record/evidence`) alongside the unchanged `PROTECTED` list, sharing one `matchesRoute()` helper. A `REFRESH_ONLY` match runs the session-refresh branch but never Proxy's redirect-to-`/enter`; each page's own existing unauthenticated-participant redirect logic remains the sole authority on where the participant goes.
+- `docs/architecture/routing.md` — "Route Protection Mechanism" updated to describe the two-list split.
+- `docs/architecture/session-management.md` — "Session Refresh Mechanism" updated with the resolution and the verification table below.
+- `docs/history/open-items.md` — item 16 updated to `RESOLVED (Phase 5A, 2026-09-14)`.
+- `docs/history/2026-09-14-session-refresh-separation-applied.md` — created.
+
+**Resolved:** Session refresh is now structurally separated from Proxy route protection. `PROTECTED` remains unchanged in membership and meaning. `REFRESH_ONLY` covers `/remember`, `/record`, `/record/evidence`. Item 16 is `RESOLVED`.
+
+**Verified this session:** `npx tsc --noEmit` (clean), `eslint proxy.ts` (clean), `next build` (succeeded, all 45 routes compiled including `/remember`, `/record`, `/record/evidence`, `Proxy (Middleware)` listed, no regressions). Runtime-verified against a fresh local `next dev`, unauthenticated: `/begin` (`PROTECTED`) → `/enter` unchanged; `/remember` → `/begin`; `/record` → `/begin`; `/record/evidence` → `/record` (none redirected to `/enter`); `/` and `/pathways` (neither list) → 200 with no Supabase call. Set-Cookie refresh under an actual near-expiry token was not directly observed — no such session state existed locally and none was manufactured.
+
+**Not implemented:** Authorization composition (`authorizeRememberAccess()` or equivalent) is still NOT implemented. Commerce + Access route wiring (`/remember`, `/api/remember/*` entitlement checks) is still NOT implemented. No changes to `/api/*`, no changes to any page's own redirect-destination logic.
+
+**Next implementation phase:** Authorization composition — implement and verify `authorizeRememberAccess()` (or equivalent) as the authoritative server-side composition of the applicable Pathway eligibility requirements and `hasEffectiveEntitlement()`. Do NOT wire `/remember` or `/api/remember/*` in this phase. Route wiring follows only after the authorization composition has been independently approved and verified.
+
+**Deployment status:** Not deployed. Not staged. Not committed. Not pushed, pending Founder pre-commit review.
+
+---
+
 ## Repository Memory Principle
 
 The repository is where constitutional memory lives.
