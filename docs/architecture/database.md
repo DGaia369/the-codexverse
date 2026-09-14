@@ -240,6 +240,19 @@ Row Level Security is enabled on both `products` and `entitlements`. No policies
 
 No API routes, no authorization composition logic (`authorizeRememberAccess` or equivalent), no checkout, no payment-provider logic, and `utils/entitlements.ts` remains an unimplemented stub. This phase was database structure only. See `docs/history/2026-09-13-commerce-access-entitlement-schema-applied.md` for the full application and verification record, and `docs/history/open-items.md` (item 17) for the tracked next state.
 
+### Phase 4: entitlement service implemented and live-proven
+
+**Status:** Verified Live.
+
+**Application date:** September 14, 2026
+**Verification date:** September 14, 2026
+
+`utils/entitlements.ts` (previously a 0-byte stub) now implements `PATHWAY_TWO_PRODUCT_KEY`, `hasEffectiveEntitlement(userId, productKey)`, and `grantAdminEntitlement({ userId, productKey, grantedByUserId, startsAt?, expiresAt? })`, following exactly the effective-entitlement rule stated above and reusing the service-role access pattern already established in `utils/remember.ts`. `grantAdminEntitlement()` requires a real `grantedByUserId` in application code for every `admin_grant` creation, matching the Phase 3A ruling that this enforcement belongs here rather than in a database constraint.
+
+One live `admin_grant` entitlement was created for the Founder account against `pathway-two-remember`, using `grantAdminEntitlement()` (no raw SQL insert). `hasEffectiveEntitlement()` returned `true` for that grant. A negative control confirmed an unknown product key surfaces a distinct error rather than being absorbed into a `false` result.
+
+No API route, no authorization composition (`authorizeRememberAccess` or equivalent), no checkout, no payment-provider logic, and no route wiring were introduced by this phase. See `docs/history/2026-09-14-commerce-access-entitlement-service-applied.md` for the full application and verification record, and `docs/history/open-items.md` (item 17) for the current tracked state.
+
 ### Phase 3A: entitlement integrity constraints — Verified Live
 
 **Status:** Verified Live. Applied manually through the Supabase Dashboard SQL Editor.

@@ -77,31 +77,33 @@
 
     See `docs/architecture/routing.md` ("Route Protection Mechanism") and `docs/architecture/session-management.md` ("Session Refresh Mechanism") for the verified technical findings this item is based on. Recorded 2026-09-10.
 
-17. **Commerce + Access V1 entitlement schema (`products`, `entitlements`)**
-    `Status: Applied and Verified Live (Phase 3 + Phase 3A)`
-    `Type: Database schema / Commerce + Access`
+17. **Commerce + Access V1 entitlement schema and service (`products`, `entitlements`, `utils/entitlements.ts`)**
+    `Status: Applied and Verified Live (Phase 3 + Phase 3A + Phase 4)`
+    `Type: Database schema / Application service / Commerce + Access`
 
     **Phase 3** — Applied manually through the Supabase Dashboard SQL Editor, September 13, 2026, and independently verified against live PostgreSQL system catalogs the same day. See `docs/history/2026-09-13-commerce-access-entitlement-schema-applied.md`.
 
-    `products` contains exactly one seeded row (`pathway-two-remember` / `Pathway Two™: ReMEMBER™` / `active`). No Founding Access product and no price data were seeded. `entitlements` contains zero rows.
+    `products` contains exactly one seeded row (`pathway-two-remember` / `Pathway Two™: ReMEMBER™` / `active`). No Founding Access product and no price data were seeded.
 
-    **Phase 3A** — Additive integrity follow-up applied manually through the Supabase Dashboard SQL Editor, September 14, 2026, and independently verified the same day. Added `entitlements_expires_at_after_starts_at_check` and replaced `entitlements_revoked_at_matches_status_check` with the stronger `entitlements_revocation_integrity_check` (requires a non-whitespace `revocation_reason` whenever `status = 'revoked'`). Deliberately does not add an admin-grant provenance database constraint — see `docs/history/2026-09-14-commerce-access-entitlement-integrity-applied.md` for the full record and reasoning. `entitlements` remained at zero rows immediately after verification.
+    **Phase 3A** — Additive integrity follow-up applied manually through the Supabase Dashboard SQL Editor, September 14, 2026, and independently verified the same day. Added `entitlements_expires_at_after_starts_at_check` and replaced `entitlements_revoked_at_matches_status_check` with the stronger `entitlements_revocation_integrity_check` (requires a non-whitespace `revocation_reason` whenever `status = 'revoked'`). Deliberately does not add an admin-grant provenance database constraint — see `docs/history/2026-09-14-commerce-access-entitlement-integrity-applied.md` for the full record and reasoning.
 
-    See `docs/architecture/database.md` ("Commerce + Access: `products` and `entitlements`", including the Phase 3A subsection) for the current architecture description.
+    **Phase 4** — `utils/entitlements.ts` implemented (`PATHWAY_TWO_PRODUCT_KEY`, `hasEffectiveEntitlement()`, `grantAdminEntitlement()`), September 14, 2026. One live `admin_grant` entitlement was created for the Founder account via `grantAdminEntitlement()` (no raw SQL), and `hasEffectiveEntitlement()` was verified to return `true` for it. A negative control confirmed an unknown product key surfaces a distinct error rather than a silent `false`. See `docs/history/2026-09-14-commerce-access-entitlement-service-applied.md` for the full application and verification record. `entitlements` now contains exactly one live row (the Founder's own admin grant).
+
+    See `docs/architecture/database.md` ("Commerce + Access: `products` and `entitlements`", including the Phase 3A and Phase 4 subsections) for the current architecture description.
 
     Next state (approved implementation sequence):
 
-    1. Implement the entitlement service in `utils/entitlements.ts`.
-    2. Implement the minimal Founder/Admin grant service/path.
-    3. Creation of an `admin_grant` entitlement must require a real grantor in application code (the database intentionally does not enforce this — see Phase 3A).
-    4. Test an `admin_grant` end-to-end using the Founder's account.
-    5. Verify `hasEffectiveEntitlement()` returns true for that grant.
-    6. Verify multiple-grant semantics as appropriate (a revoked grant must not remove access if another effective entitlement for the same participant/product remains).
+    1. ~~Implement the entitlement service in `utils/entitlements.ts`.~~ Done, Phase 4.
+    2. ~~Implement the minimal Founder/Admin grant service/path.~~ Done, Phase 4 (`grantAdminEntitlement()`).
+    3. ~~Creation of an `admin_grant` entitlement must require a real grantor in application code.~~ Done, Phase 4 (enforced in `grantAdminEntitlement()`; the database intentionally does not enforce this — see Phase 3A).
+    4. ~~Test an `admin_grant` end-to-end using the Founder's account.~~ Done, Phase 4.
+    5. ~~Verify `hasEffectiveEntitlement()` returns true for that grant.~~ Done, Phase 4.
+    6. Verify multiple-grant semantics with a dedicated non-production test (a revoked grant must not remove access if another effective entitlement for the same participant/product remains). Not yet independently re-tested with a second live grant; the implementation was inspected and confirmed structurally existence-based, not assuming a unique row. Remains open.
     7. Only after that proof, implement authorization composition (`authorizeRememberAccess` or equivalent).
     8. Route wiring for `/remember`, `/api/remember/screen`, `/api/remember/response`, and future protected Pathway Two™ surfaces follows only after the authorization composition is approved.
     9. Item 16, the proxy.ts/session-refresh issue, remains OPEN and must be resolved before protected Commerce + Access entry is considered production-ready.
 
-    Recorded 2026-09-13. Updated 2026-09-14.
+    Recorded 2026-09-13. Updated 2026-09-14 (Phase 3A). Updated 2026-09-14 (Phase 4).
 
 18. **Supabase migration workflow normalization**
     `Status: Deferred`

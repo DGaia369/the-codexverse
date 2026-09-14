@@ -390,6 +390,29 @@ The Library of Yourself™ currently presents only Pathway One™ (Return to Sel
 
 ---
 
+## Commerce + Access Phase 4 Report
+
+**Date:** 2026-09-14
+**Branch:** `feature/pathway-two-remember`
+**Directive:** Commerce + Access Phase 4 — Entitlement Service + Founder/Admin Grant Proof.
+**Files changed:**
+- `utils/entitlements.ts` — implemented (was a 0-byte stub). `PATHWAY_TWO_PRODUCT_KEY`, `hasEffectiveEntitlement(userId, productKey)`, `grantAdminEntitlement({ userId, productKey, grantedByUserId, startsAt?, expiresAt? })`. Reuses the service-role client pattern already established in `utils/remember.ts` rather than introducing a second database-access architecture.
+- `docs/architecture/database.md` — new Phase 4 subsection under "Commerce + Access: `products` and `entitlements`".
+- `docs/history/2026-09-14-commerce-access-entitlement-service-applied.md` — created.
+- `docs/history/open-items.md` — item 17 updated to Phase 4 status; steps 1-5 of the approved sequence marked done.
+
+**Application code changes:** `grantAdminEntitlement()` requires a real `grantedByUserId` for every `admin_grant`, matching the Phase 3A ruling that this enforcement belongs in application code rather than a database constraint. `hasEffectiveEntitlement()` is existence-only (no assumption of a single row per participant/product) and distinguishes an unknown product key (throws) from "no entitlement" (returns `false`).
+
+**Verified this session:** `npx tsc --noEmit` (clean), `eslint utils/entitlements.ts` (clean), `next build` (succeeded, all 45 routes compiled, no regressions). Live proof performed with explicit Founder approval after a Pre-Write Review: one `admin_grant` entitlement created for the Founder account via `grantAdminEntitlement()` (no raw SQL), `hasEffectiveEntitlement()` verified `true` for that grant, and a negative control (unknown product key) confirmed the designed error path rather than a silent `false`. The temporary compiled proof script used to invoke the real service functions was deleted immediately after the proof and was never staged or committed.
+
+**Not implemented:** `authorizeRememberAccess()` or equivalent, any route wiring (`/remember`, `/api/remember/*`), checkout, payment-provider integration, offers, gifts, licences, memberships, affiliate logic. Multiple-grant semantics were inspected but not re-proven with a second live grant (open item 17, step 6).
+
+**Outstanding blocker, unaffected by this work:** the proxy.ts/session-refresh gap (`docs/history/open-items.md`, item 16) remains OPEN.
+
+**Deployment status:** `utils/entitlements.ts` implemented locally; one live entitlement row exists in the production Supabase project for the Founder's own account (a deliberate, approved self-grant proof, not participant-facing data). No route, checkout, or participant-facing behavior was added or changed.
+
+---
+
 ## Repository Memory Principle
 
 The repository is where constitutional memory lives.
