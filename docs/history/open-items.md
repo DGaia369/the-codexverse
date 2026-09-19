@@ -107,3 +107,24 @@
     Future task: before a later production schema phase, deliberately evaluate and establish a linked, auditable Supabase migration-application/history workflow (or explicitly ratify the manual-application-plus-history-record convention as the intended permanent approach). Not solved now — no `config.toml` was created, no project was linked, no migration history was repaired, and no `db push` was run as part of recording this item.
 
     Recorded 2026-09-14.
+
+19. **S-03: Day 7 email routing — functional defect and stale Pathway Two™/Three™ references**
+    `Status: Founder-ruled — old route superseded, not to be repaired in isolation; entitlement-gating authorized as next dependency`
+    `Type: Email routing / Commerce + Access authorization / Pathway sequencing`
+
+    Verified by bounded read-only audit (S-02/S-03), 2026-09-18.
+
+    - The Day 7 email CTA (`utils/resend.ts`, `sendDaySevenEmail`) links to a hardcoded, static URL (`https://thecodexverse.com/door?from=day7&door=return_to_self&pathway=the_agreement`) with no `session_id` or other participant/session context ever supplied — `sendDaySevenEmail()`'s parameters and the cron sender's `scheduled_emails` query (`app/api/return/cron/send-scheduled-emails/route.ts`) carry no identifier that could be appended. Every Day 7 recipient's CTA link therefore lands on `app/door/page.tsx`'s "We could not open the door — this return is missing its pathway context" fallback. This is a functional defect, independent of the naming issue below.
+    - The same CTA's `pathway=the_agreement` slug reflects the superseded pre-canon architecture in which the Agreement belonged to Pathway Two™. Current canon (`docs/canon/pathways.md`) places the Agreement at Pathway Three™, after ReMEMBER™. This route is superseded architecture, not a live target to be patched.
+    - Consequently, Pathway One™ → Pathway Two™: ReMEMBER™ is **not implemented** via Day 7 or via any other route/email/component in the repository. No production surface currently links a participant from Day 7 to `/remember`.
+    - `/remember` (`app/remember/page.tsx`) currently gates only on `checkRememberEligibility()` (Pathway One completion); it does not yet call `authorizeRememberAccess()` (`utils/authorization.ts`), which composes eligibility with `hasEffectiveEntitlement()` (`utils/entitlements.ts`, live since Phase 4 — see item 17). The ReMEMBER™ API routes (`app/api/remember/screen/route.ts`, `app/api/remember/response/route.ts`) authorize only by session ownership, not by entitlement.
+    - Pathway Two™: ReMEMBER™ → Pathway Three™: the Agreement™ has no implemented handoff. `utils/remember.ts` defines only Movement One and Movement Two; full-pathway completion (`remember_sessions.status = 'completed'`) is reserved but never set by any current code path, and no CTA/route/email references `/tier-2` from within ReMEMBER™.
+
+    **Founder ruling, 2026-09-18:**
+    - The old Day 7 `/door?...pathway=the_agreement` route must **not** be repaired in isolation (e.g., merely adding `session_id` back) — it is superseded architecture.
+    - Day 7 must ultimately hand toward Pathway Two™: ReMEMBER™, not the Agreement™. The exact destination route will be ruled as part of the commerce/access entry flow — **not invented ahead of that ruling.**
+    - ReMEMBER™ → the Agreement™ remains intentionally deferred until ReMEMBER™ pathway-completion architecture is defined (not addressed by this item).
+    - **Entitlement-gating is authorized as the next dependency**: wiring `authorizeRememberAccess()` into `/remember`'s page and its two API routes, and adding a `verified_acquisition`-source entitlement-granting function to `utils/entitlements.ts` (parallel to the existing `grantAdminEntitlement()`), may proceed without pre-deciding the checkout/webhook route or the final Day 7 destination. This directly continues item 17's already-approved sequence, step 7 ("implement authorization composition") and step 8 ("route wiring ... follows only after the authorization composition is approved").
+    - The checkout/payment route, any Stripe webhook, and the Day 7 destination/link-construction fix all remain blocked pending a separate Founder ruling on the commerce/access entry flow.
+
+    Recorded 2026-09-18.
