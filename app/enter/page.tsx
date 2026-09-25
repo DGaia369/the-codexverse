@@ -82,7 +82,12 @@ export default function EnterPage() {
       return;
     }
 
-    window.location.href = '/begin';
+    // Founder ruling 2026-09-24 (Launch Sprint 1, Ruling 4): only the fixed
+    // token next=day7 (set by proxy.ts for a logged-out Day 7 recipient) is
+    // honoured, and it maps to one hard-coded internal destination. Any other
+    // value is ignored, so this cannot become an open redirect.
+    const next = new URLSearchParams(window.location.search).get('next');
+    window.location.href = next === 'day7' ? '/door?from=day7' : '/begin';
   }
 
   return (

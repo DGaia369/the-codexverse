@@ -127,4 +127,40 @@
     - **Entitlement-gating is authorized as the next dependency**: wiring `authorizeRememberAccess()` into `/remember`'s page and its two API routes, and adding a `verified_acquisition`-source entitlement-granting function to `utils/entitlements.ts` (parallel to the existing `grantAdminEntitlement()`), may proceed without pre-deciding the checkout/webhook route or the final Day 7 destination. This directly continues item 17's already-approved sequence, step 7 ("implement authorization composition") and step 8 ("route wiring ... follows only after the authorization composition is approved").
     - The checkout/payment route, any Stripe webhook, and the Day 7 destination/link-construction fix all remain blocked pending a separate Founder ruling on the commerce/access entry flow.
 
-    Recorded 2026-09-18.
+    **2026-09-24 update (Launch Sprint 1):**
+    - Entitlement-gating is implemented and Verified Local (in-process, partial). See `docs/history/2026-09-24-phase-5b-remember-authorization-wiring.md`. `/remember` and both ReMEMBER™ API routes now call `authorizeRememberAccess()` on every request. The `verified_acquisition` grant function named in the 2026-09-18 ruling was **not** built, because Sprint 1 excludes checkout.
+    - Founder rulings in the Sprint 1 directive: Pathway One™ is closed. Day 0/3/7 remain part of Pathway One™. The Day 7 defect is an implementation repair inside closed Pathway One™, not a redesign. Day 7 moves forward and the Door remains the transition point. The CTA wording and final destination remain Founder-reserved.
+    - Bounded read-only Day 7 inspection completed, plus two further findings. (a) `returns.door` and `returns.pathway` are written only by `/begin`'s initial row (`return_to_self` / `return_to_self`). The qualifying completed row written by `/api/return` never sets them. (b) A logged-out Day 7 recipient hits `/door` (in `PROTECTED`), is redirected to `/enter`, and after OTP verification lands on `/begin`. The Day 7 destination is lost. An exact repair plan was returned to the Founder, and nothing participant-facing was applied.
+    - Status (morning): Awaiting Founder approval of the Day 7 repair plan.
+    - **Same-day Founder rulings (Launch Sprint 1 Continuation):** Day 7 email → `/door?from=day7` → authenticated Day 7 Door branch → `/pathways#remember`. Logged-out recipients return to the Day 7 Door after authentication (Option B, bounded token `next=day7`). Copy approved: email CTA `SEE WHAT COMES NEXT`, Door text "What you recognized is still yours." / "When you're ready, you can see what comes next.", Door CTA `see what comes next`.
+    - **Implemented and Verified Local.** See `docs/history/2026-09-24-day-7-routing-repair-applied.md`. The normal Return Complete → Door → Declaration™ flow is unchanged (the Door diff has no removed lines). The Founder browser check is pending. Not committed.
+    - Remaining for Founder: the launch-state copy flag on `utils/resend.ts:304` ("the next door is waiting"). Unchanged pending a ruling.
+    - Status (2026-09-24): **Repair implemented; Founder browser check and body-sentence ruling pending.**
+    - **2026-09-25:** Founder browser proof PASSED. The Day 7 Door rendered the approved copy, and the CTA `see what comes next` landed on the Pathway Two™: ReMEMBER™ card at `/pathways#remember`. Founder ruling: the body sentence "If something in you is ready to go deeper, the next door is waiting." stays unchanged and is not a launch-state defect at this time. The Phase 5B authorization gate also passed its browser proof (see `docs/history/2026-09-24-phase-5b-remember-authorization-wiring.md`, Closure).
+    - Status: **Day 7 repair and entitlement-gating Verified Local, including the Founder browser proof. Not committed. Not deployed.** These remain blocked pending a separate ruling, as before: the checkout/payment route, the Stripe webhook, and the `verified_acquisition` grant function.
+
+    Recorded 2026-09-18. Updated 2026-09-24, 2026-09-25.
+
+20. **Entitlement and Test A state differ from the repository record**
+    `Status: RESOLVED (Founder ruling 2026-09-25): provenance preserved, data left intact`
+    `Type: Commerce + Access / data provenance`
+
+    Found during Phase 5B verification, 2026-09-24. Nothing was changed. (1) There are two `admin_grant` rows for `pathway-two-remember`, but Phase 4 recorded exactly one (the Founder's). (2) Test A (`2emaildee+rememberA@gmail.com`), recorded on 2026-09-20 as auth-only at `/begin`, is now Pathway One™-eligible, effectively entitled, and holds an active ReMEMBER™ session created 2026-09-22 (Movement One, `m1_signal`, zero responses). No repository record describes either change. Ruling needed: confirm provenance and whether the second grant and Test A's state are intended. A follow-up read-only query to identify the grant holders was blocked by the Claude Code permission classifier and needs explicit Founder approval.
+
+    **Resolution of the facts (Founder-approved read-only query, 2026-09-24):** Grant 1 is held by the Founder primary account, self-granted 2026-09-14 13:47 UTC. Grant 2 is held by Test A, granted by the Founder primary account on 2026-09-22 21:51 UTC. Both are `admin_grant`, `active`, with no expiry and not revoked. They are the only `entitlements` rows. Test A completed a Return, sealed its Declaration™, received the grant, and began ReMEMBER™ on 2026-09-22, in that order. Nothing was changed. See `docs/history/2026-09-24-phase-5b-remember-authorization-wiring.md` (Continuation). Remaining: the Founder confirms that grant 2 and Test A's progression were intentional test actions.
+
+    **Founder ruling, 2026-09-25:** preserve the established provenance. Neither entitlement, nor Test A's state, is to be altered. The data is left intact. Nothing was changed.
+
+    Recorded 2026-09-24. Updated 2026-09-24, 2026-09-25.
+
+21. **Temporary not-entitled destination for `/remember` (`/pathway`) has no recorded ruling**
+    `Status: RESOLVED (Founder ruling 2026-09-24)`
+    `Type: Routing / Commerce + Access`
+
+    `app/remember/page.tsx` sends an eligible but not-entitled participant to `/pathway` and cites "Founder Ruling 2, 2026-09-18". No such ruling text exists in `docs/`. `/pathway` is Pathway One™'s pathway view. Ruling needed: record the ruling, or name a different pre-checkout destination (the public `/pathways` card is a candidate).
+
+    Recorded 2026-09-24.
+
+    **Founder ruling, 2026-09-24:** `/pathway` was not Founder-approved. An eligible, not-entitled participant now goes to `/pathways#remember`, and a stable `id="remember"` anchor was added to the existing public Pathway Two™: ReMEMBER™ card as the durable public destination for the offer state. No offer copy was changed, and no checkout or waitlist was built. Verified Local with a real eligible, not-entitled identity.
+
+    Resolved 2026-09-24.

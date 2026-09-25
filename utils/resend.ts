@@ -308,8 +308,8 @@ export async function sendDaySevenEmail({
           Not because something essential was withheld here. Because recognition revealed there is more.
         </p>
 
-        <a href="https://thecodexverse.com/door?from=day7&door=return_to_self&pathway=the_agreement" style="display:inline-block;color:#d7ba7d;font-size:13px;letter-spacing:0.2em;text-decoration:none;border:1px solid rgba(215,186,125,0.4);padding:12px 28px;">
-          CONTINUE TO THE AGREEMENT
+        <a href="https://thecodexverse.com/door?from=day7" style="display:inline-block;color:#d7ba7d;font-size:13px;letter-spacing:0.2em;text-decoration:none;border:1px solid rgba(215,186,125,0.4);padding:12px 28px;">
+          SEE WHAT COMES NEXT
         </a>
 
         <p style="color:rgba(255,255,255,0.25);font-size:13px;line-height:1.8;margin:48px 0 8px 0;font-style:italic;">

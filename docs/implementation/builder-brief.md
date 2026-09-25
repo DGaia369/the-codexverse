@@ -437,6 +437,43 @@ The Library of Yourself™ currently presents only Pathway One™ (Return to Sel
 
 ---
 
+## Commerce + Access Phase 5B Report
+
+**Date:** 2026-09-24
+**Branch:** `feature/pathway-two-remember`
+**Directive:** Codexverse™ Launch Sprint 1, Part A (Phase 5B Authorization Closure).
+**Files changed (working tree, uncommitted):**
+- `utils/authorization.ts` (staged earlier): `authorizeRememberAccess()`.
+- `app/remember/page.tsx` (staged earlier): gated on `authorizeRememberAccess()`.
+- `app/api/remember/screen/route.ts`, `app/api/remember/response/route.ts`: gated on every request. Refined 2026-09-24 so the `userId` returned by `authorizeRememberAccess()` is the only identity used downstream (unstaged refinement on top of the staged version).
+- `docs/history/2026-09-24-phase-5b-remember-authorization-wiring.md` (created), `docs/history/open-items.md` (item 19 updated, items 20 and 21 added), `docs/architecture/routing.md` (new "Pathway Two™: ReMEMBER™ Authorization Gate" section).
+
+**Verified this session:** `tsc --noEmit` clean, ESLint clean on the Phase 5B files, `next build` succeeded (47 routes). An in-process runtime proof against live data with no mutation passed for: unauthenticated (401/401, redirect `/begin`), eligible but not entitled (controlled; 403/403, redirect `/pathway`), eligible and entitled (passes to session and validation), operational error (sanitized 500, logged internally), and an existing-session resume data load (Test A). ReMEMBER™ state snapshots were identical before and after.
+
+**Not verified:** Authenticated but Pathway One™-ineligible, with a real identity. Real browser cookie/session. Confirmation that the entitled test identity is the Founder account.
+
+**Requires Founder ruling:** Open items 20 (second `admin_grant` row and changed Test A state, both unrecorded) and 21 (`/pathway` not-entitled destination has no recorded ruling).
+
+**Temporary artifacts:** `app/api/phase5b-proof-temp/` and `app/api/phase5b-diag-temp/` are untracked and retained until the Founder's browser check passes, then deleted. They must never be committed.
+
+**Deployment status:** Not committed. Not pushed. Not deployed.
+
+**Same-day continuation (Founder rulings 1 to 5, 2026-09-24):**
+- Ruling 1: read-only reconciliation found both grants were made by the Founder primary account (self-grant 2026-09-14; Test A 2026-09-22). Open item 20 has its provenance established and awaits Founder acknowledgement.
+- Ruling 2: the not-entitled destination is `/pathways#remember`, with a stable anchor on the public card. Open item 21 is resolved.
+- Rulings 3 to 5: Day 7 routing repair implemented (`utils/resend.ts`, `app/door/page.tsx`, `proxy.ts`, `app/enter/page.tsx`). See `docs/history/2026-09-24-day-7-routing-repair-applied.md`.
+- Final in-process proof passed for all identity classes. The ineligible class used a synthetic identity, because no Founder-controlled identity is ineligible. Eligible, not entitled used Identity B, a real Founder-controlled alias.
+- Build passed. Local dev server running at `http://localhost:3919` (Webpack) for the Founder browser check. The temporary routes are retained until that check passes.
+
+**Closure (2026-09-25):**
+- Founder browser proof PASSED. Identity F: `/api/phase5b-proof-temp` returned `{"authorized":true,"eligible":true,"entitled":true}`. The Day 7 Door rendered the approved copy, and the CTA landed on the ReMEMBER™ card at `/pathways#remember`.
+- `app/api/phase5b-proof-temp/` and `app/api/phase5b-diag-temp/` deleted. Never committed.
+- Re-verified: `tsc --noEmit` clean. Targeted ESLint clean except the pre-existing `app/enter/page.tsx:21` (`react-hooks/set-state-in-effect`, present at `HEAD`, from `1f917b3`, not repaired this sprint). `next build` succeeded (45 routes).
+- Founder rulings: the Day 7 sentence "the next door is waiting" stays unchanged. Open item 20 is resolved, with provenance preserved and data left intact.
+- Phase 5B and the Day 7 repair are Verified Local. Not committed. Not pushed. Not deployed.
+
+---
+
 ## Repository Memory Principle
 
 The repository is where constitutional memory lives.

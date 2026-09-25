@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createServerSupabaseClient } from '@/utils/supabase/server';
 import { getActiveSessionForUser, saveMovementResponse } from '@/utils/remember';
+import { authorizeRememberAccess } from '@/utils/authorization';
 
 // The client never supplies a remember_session_id. The caller's own active
 // session is always resolved server-side from the authenticated user, so
@@ -14,19 +14,31 @@ import { getActiveSessionForUser, saveMovementResponse } from '@/utils/remember'
 // m1_to_m2 for Movement One, m2_closing to m2_to_m3 for Movement Two).
 export async function POST(req: NextRequest) {
   try {
-    const supabase = await createServerSupabaseClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+    // Re-evaluated on every request. Participant identity comes only from
+    // the authenticated Supabase session resolved inside
+    // authorizeRememberAccess(); the userId it returns is the sole identity
+    // used below. Operational failures (database/product lookup) throw and
+    // reach the 500 handler, so they stay distinct from a legitimate
+    // denial. A denial never reaches a ReMEMBER™ read or write.
+    const authorization = await authorizeRememberAccess();
 
-    if (!user?.id) {
-      return NextResponse.json({ ok: false, error: 'Unauthenticated' }, { status: 401 });
+    if (!authorization.authorized) {
+      if (!authorization.eligible && authorization.reason === 'unauthenticated') {
+        return NextResponse.json({ ok: false, error: 'Unauthenticated' }, { status: 401 });
+      }
+
+      return NextResponse.json(
+        { ok: false, error: 'Not authorized' },
+        { status: 403 }
+      );
     }
+
+    const userId = authorization.userId;
 
     const body = await req.json();
     const { promptKey, responseText } = body;
 
-    const session = await getActiveSessionForUser(user.id);
+    const session = await getActiveSessionForUser(userId);
 
     if (!session) {
       return NextResponse.json(
@@ -36,7 +48,7 @@ export async function POST(req: NextRequest) {
     }
 
     const saveResult = await saveMovementResponse({
-      userId: user.id,
+      userId,
       rememberSessionId: session.id,
       promptKey,
       responseText,

@@ -32,7 +32,10 @@ export default function PathwaysPage() {
             </p>
           </div>
 
-          <div style={pathwayCardStyle}>
+          {/* Stable anchor (Founder ruling 2026-09-24): /pathways#remember is
+              the durable public destination for the Pathway Two™ offer state.
+              scrollMarginTop keeps the card clear of the sticky header. */}
+          <div id="remember" style={{ ...pathwayCardStyle, scrollMarginTop: '128px' }}>
             <p style={pathwayLabelStyle}>Pathway Two™: ReMEMBER™</p>
             <p style={{ fontSize: '16px', lineHeight: 1.8, color: BODY_COLOR, margin: '0 0 24px' }}>
               The next passage gathers what became scattered while you were becoming who the world required.

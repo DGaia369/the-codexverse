@@ -46,7 +46,23 @@ For paths matched by its internal `PROTECTED` list, `proxy.ts` constructs a Supa
 
 **Session refresh separated from route protection (2026-09-14):** `proxy.ts` also carries a second, independent list, `REFRESH_ONLY` — currently `/remember`, `/record`, `/record/evidence` — for authenticated Server Component pages that need their Supabase session refreshed by Proxy (since a Server Component cannot persist a refreshed cookie itself) but must never be redirected to `/enter` by Proxy; each of these pages owns its own unauthenticated-participant redirect logic instead. A path matching either `PROTECTED` or `REFRESH_ONLY` triggers the session-refresh branch; only a `PROTECTED` match can trigger the `/enter` redirect. See `docs/architecture/session-management.md` ("Session Refresh Mechanism") and `docs/history/2026-09-14-session-refresh-separation-applied.md` for the full record.
 
+**Day 7 destination preservation (2026-09-24):** for an unauthenticated request to `/door?from=day7` only, Proxy redirects to `/enter?next=day7` instead of `/enter`. `/enter` sends the participant to the hard-coded `/door?from=day7` after OTP verification when `next` is exactly `day7`, and to `/begin` otherwise. No general redirect parameter exists. See `docs/architecture/email-flow.md` ("Day 7 transition").
+
 Paths in neither list — currently including `/declaration`, `/between-threshold`, `/enter`, and every `/api/*` route — return immediately without any Supabase call, unchanged from before this separation. `/api/*` routes were not part of the session-refresh gap and were not added to `REFRESH_ONLY`: their own Route Handler context already persists refreshed cookies correctly (Route Handlers, unlike Server Components, are permitted to write cookies).
+
+## Pathway Two™: ReMEMBER™ Authorization Gate
+
+**Status:** Verified Local (in-process, all five identity classes; see `docs/history/2026-09-24-phase-5b-remember-authorization-wiring.md`), plus the Founder browser proof with a real session (PASSED 2026-09-25). Not committed. Not deployed.
+
+Every ReMEMBER™ request surface calls `authorizeRememberAccess()` (`utils/authorization.ts`) on every request. It composes `checkRememberEligibility()` (`utils/remember.ts`, Pathway One™ completion plus a sealed Declaration™) with `hasEffectiveEntitlement()` (`utils/entitlements.ts`). Eligibility is checked first, and an ineligible result returns before entitlement is evaluated. Participant identity comes only from the authenticated Supabase session. No route accepts a client-supplied `user_id` or `remember_session_id`.
+
+| Surface | Unauthenticated | Authenticated, ineligible | Eligible, not entitled | Eligible and entitled | Operational error |
+|---|---|---|---|---|---|
+| `/remember` (page) | redirect `/begin` | redirect per `getRedirectForIneligibility()` | redirect `/pathways#remember` (Founder ruling 2026-09-24) | loads or resumes the participant's own session | thrown; framework error page, no data |
+| `PATCH /api/remember/screen` | 401 | 403 `Not authorized` | 403 `Not authorized` | proceeds to session and sequence validation | 500 sanitized, logged internally |
+| `POST /api/remember/response` | 401 | 403 `Not authorized` | 403 `Not authorized` | proceeds to prompt validation and save | 500 sanitized, logged internally |
+
+A denial never reaches a ReMEMBER™ read or write, and denial responses carry no participant data.
 
 ## Routing principles
 

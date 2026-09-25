@@ -81,7 +81,18 @@ export async function proxy(request: NextRequest) {
   // logic as the sole authority on where an unauthenticated participant
   // goes.
   if (isProtected && !user) {
-    return NextResponse.redirect(new URL('/enter', request.url));
+    const enterUrl = new URL('/enter', request.url);
+
+    // Founder ruling 2026-09-24 (Launch Sprint 1, Ruling 4): a logged-out
+    // Day 7 recipient must return to the Day 7 Door after authenticating.
+    // Only a fixed token is passed, never a path or URL; /enter maps it to
+    // the one hard-coded destination /door?from=day7. No general redirect
+    // parameter exists.
+    if (pathname === '/door' && request.nextUrl.searchParams.get('from') === 'day7') {
+      enterUrl.searchParams.set('next', 'day7');
+    }
+
+    return NextResponse.redirect(enterUrl);
   }
 
   return response;

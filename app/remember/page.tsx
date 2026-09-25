@@ -1,27 +1,34 @@
 import { redirect } from 'next/navigation';
 import {
-  checkRememberEligibility,
   getOrCreateActiveSession,
   getSessionResponses,
 } from '@/utils/remember';
 import { getRedirectForIneligibility } from '@/utils/remember';
+import { authorizeRememberAccess } from '@/utils/authorization';
 import RememberExperience from './RememberExperience';
 
 export default async function RememberPage() {
-  const eligibility = await checkRememberEligibility();
+  const authorization = await authorizeRememberAccess();
 
-  if (!eligibility.eligible) {
-    redirect(getRedirectForIneligibility(eligibility));
+  if (!authorization.eligible) {
+    redirect(getRedirectForIneligibility(authorization));
+  }
+
+  if (!authorization.entitled) {
+    // Founder ruling, 2026-09-24 (Launch Sprint 1, Ruling 2): the public
+    // Pathway Two™: ReMEMBER™ card is the durable destination for the
+    // offer state. See docs/history/open-items.md item 21.
+    redirect('/pathways#remember');
   }
 
   const session = await getOrCreateActiveSession({
-    userId: eligibility.userId,
-    email: eligibility.email,
-    pathwayOneSessionId: eligibility.pathwayOneSessionId,
+    userId: authorization.userId,
+    email: authorization.email,
+    pathwayOneSessionId: authorization.pathwayOneSessionId,
   });
 
   const responsesResult = await getSessionResponses({
-    userId: eligibility.userId,
+    userId: authorization.userId,
     rememberSessionId: session.id,
   });
 
