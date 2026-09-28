@@ -108,6 +108,8 @@
 
     Recorded 2026-09-14.
 
+    **2026-09-25:** `20260925120000_create_waitlist_interests.sql` was applied the same manual way, and recorded in `docs/history/2026-09-25-waitlist-migration-applied.md`. **2026-09-26:** so was `20260925120100_create_acquisitions.sql`, recorded in `docs/history/2026-09-26-acquisitions-migration-applied.md`. The workflow question itself remains deferred.
+
 19. **S-03: Day 7 email routing — functional defect and stale Pathway Two™/Three™ references**
     `Status: Founder-ruled — old route superseded, not to be repaired in isolation; entitlement-gating authorized as next dependency`
     `Type: Email routing / Commerce + Access authorization / Pathway sequencing`
@@ -138,6 +140,7 @@
     - Status (2026-09-24): **Repair implemented; Founder browser check and body-sentence ruling pending.**
     - **2026-09-25:** Founder browser proof PASSED. The Day 7 Door rendered the approved copy, and the CTA `see what comes next` landed on the Pathway Two™: ReMEMBER™ card at `/pathways#remember`. Founder ruling: the body sentence "If something in you is ready to go deeper, the next door is waiting." stays unchanged and is not a launch-state defect at this time. The Phase 5B authorization gate also passed its browser proof (see `docs/history/2026-09-24-phase-5b-remember-authorization-wiring.md`, Closure).
     - Status: **Day 7 repair and entitlement-gating Verified Local, including the Founder browser proof. Not committed. Not deployed.** These remain blocked pending a separate ruling, as before: the checkout/payment route, the Stripe webhook, and the `verified_acquisition` grant function.
+    - **2026-09-25:** the Launch Sprint 2 directive authorized those three. They are built behind a closed sales gate. See item 22.
 
     Recorded 2026-09-18. Updated 2026-09-24, 2026-09-25.
 
@@ -164,3 +167,169 @@
     **Founder ruling, 2026-09-24:** `/pathway` was not Founder-approved. An eligible, not-entitled participant now goes to `/pathways#remember`, and a stable `id="remember"` anchor was added to the existing public Pathway Two™: ReMEMBER™ card as the durable public destination for the offer state. No offer copy was changed, and no checkout or waitlist was built. Verified Local with a real eligible, not-entitled identity.
 
     Resolved 2026-09-24.
+
+22. **Launch Sprint 2: ReMEMBER™ waitlist and Founding Access (Stripe test mode, sales closed)**
+    `Status (current, 2026-09-28, after the Founder batch lock): prerequisites 1–6 PASSED; 7 PARTIAL/OPEN (implemented, Migration 3 Applied and Verified Live, live lost-dispute sandbox proof interrupted; a clean post-reboot re-run is required); 8 PASSED; 9 PASSED; 10 NOT STARTED. Public sales CLOSED. Committed and pushed to feature/pathway-two-remember; not merged; not deployed. The chronological entries below are the history. Earlier status (superseded): Implemented, Verified Local; Migration 1 Applied and Verified + waitlist proof PASSED (2026-09-25); Migration 2 Applied and Verified (2026-09-26); database gate closed; Stripe test setup and commerce proof pending`
+    `Type: Commerce + Access / public offer`
+
+    First implementation pass, 2026-09-25. See `docs/history/2026-09-25-launch-sprint-2-waitlist-and-founding-access.md` and `docs/architecture/commerce.md`. Built: a reusable waitlist on the public ReMEMBER™ card; a server-only sales gate (`REMEMBER_SALES_STATE`, closed by default); Stripe Checkout for US$97 Founding Access; a signed webhook → `acquisitions` → `verified_acquisition` entitlement (idempotent); refund revocation of the purchase's own entitlement; and a post-purchase confirmation that grants nothing. Public sales remain **CLOSED**.
+
+    Remaining before launch:
+    1. Apply `20260925120000_create_waitlist_interests.sql` through the Supabase SQL Editor (item 18 convention), and record the application. (Superseded ordering, 2026-09-25: `20260925120100_create_acquisitions.sql` is HELD until Migration 1 is verified and the waitlist browser proof passes. See the Migration Gate 1 rulings and the continuity reconciliation below.)
+    2. Add `STRIPE_SECRET_KEY` (test), `STRIPE_WEBHOOK_SECRET`, and `REMEMBER_SALES_STATE=test` to `.env.local`, and set up a test-mode webhook (Dashboard destination or `stripe listen`).
+    3. Founder browser proofs: waitlist, and the full test-mode purchase through authorized `/remember`.
+    4. Founder rulings: provisional purchase and confirmation copy and the open-state CTA; `acquisitions.user_id ON DELETE RESTRICT`; refund policy (partial refunds keep access in V1); dispute/chargeback handling (not built, and a lost dispute keeps access; *superseded 2026-09-27: ruled and built, see below*); whether a waitlist confirmation email or rate limiting is wanted before launch.
+    5. Production: live keys and a live webhook in Vercel, deployment, then a production test. OPEN FOUNDING ACCESS follows only when every item in the canonical prerequisite list below is met.
+
+    Recorded 2026-09-25.
+
+    **Founder rulings, 2026-09-25 (Migration Gate 1):**
+    - Architecture approved to continue to live verification. Public sales remain **CLOSED**. `REMEMBER_SALES_STATE` stays closed.
+    - Migration 1 (`20260925120000_create_waitlist_interests.sql`) was surfaced for Founder application. Migration 2 (`20260925120100_create_acquisitions.sql`) is held until Migration 1 is applied and the waitlist live-browser proof passes.
+    - `acquisitions.user_id ON DELETE RESTRICT` is kept for V1: a verified payment record must not disappear because an auth identity is deleted. Future policy: item 23.
+    - Refund behavior approved for V1: a full refund revokes only that purchase's `verified_acquisition` entitlement; a partial refund does not revoke access; no history is deleted. Public refund-policy copy remains Founder-reserved and must be completed before live paid traffic.
+    - No waitlist confirmation email for V1. No new rate-limiting dependency. Future hardening: item 24.
+    - Disputes/chargebacks: a **required pre-live blocker**. A bounded design for revoking purchase-derived access after a verified lost dispute must be returned before OPEN FOUNDING ACCESS. It does not block waitlist or Stripe test-mode verification, and nothing speculative is implemented now.
+    - Commerce copy (purchase page, Stripe line-item name, confirmation/waiting page, open-state CTA) is placeholder and not approved. Exact copy is to be returned for Founder review after technical test-mode proof. The waitlist copy remains approved.
+    - OPEN FOUNDING ACCESS requires a later explicit ruling after: migrations verified, waitlist browser proof, Stripe test checkout proof, verified acquisition proof, entitlement proof, post-purchase authorization proof, dispute/chargeback handling closed, and refund policy copy approved. (Superseded by the canonical list below, which adds commerce copy approval.)
+
+    **Founder rulings, 2026-09-25 (continuity reconciliation, documentation only):**
+    - **Governing migration sequence.** First, the Founder applies Migration 1 (`20260925120000_create_waitlist_interests.sql`), then verifies schema, constraints, RLS, and policies, runs the waitlist browser proof, verifies duplicate behavior, and verifies that no auth user, entitlement, or ReMEMBER™ session is created. **Only after that passes** may Migration 2 (`20260925120100_create_acquisitions.sql`) proceed to Founder review and application.
+    - **`/enter` token security proof recorded.** It passed all 11 cases. See `docs/history/2026-09-25-launch-sprint-2-waitlist-and-founding-access.md`.
+    - **Canonical OPEN FOUNDING ACCESS prerequisites.** All of the following are required:
+      1. both migrations verified
+      2. waitlist browser proof passed
+      3. Stripe test checkout proof passed
+      4. verified acquisition proof passed
+      5. entitlement proof passed
+      6. post-purchase authorization proof passed
+      7. dispute / chargeback handling closed
+      8. public refund-policy copy approved
+      9. participant-facing commerce copy approved (at minimum: purchase page copy, confirmation/waiting copy, Stripe line-item name, open-state CTA). It remains placeholder and unapproved until Founder review. The waitlist copy is already approved and is not reopened.
+      10. explicit Founder ruling: OPEN FOUNDING ACCESS
+
+    **Founder ruling, 2026-09-25 (Migration Gate 1 closed):** MIGRATION 1 + WAITLIST LIVE-BROWSER PROOF: **PASSED**. Migration 1 is applied and verified (7 columns, 4 constraints, RLS on, 0 policies, 0 initial rows). The browser proof passed: approved copy, confirmation, duplicate with no disclosure and no second row, keyboard, rapid repeat-click, final row count 1, and 0 auth users, entitlements, or ReMEMBER™ sessions for the submitted email. Record: `docs/history/2026-09-25-waitlist-migration-applied.md`. Prerequisite 2 (waitlist browser proof) is met; prerequisite 1 is half met (Migration 1 verified, Migration 2 pending). The Migration 2 hold is **released for Founder review only**. It is not applied.
+
+    **2026-09-26, pre-application integrity correction (Founder review of Migration 2):** the replay guard now requires all purchase facts to match (null-safe). The harness passed 62 of 62. The earlier Migration 2 fingerprints are superseded: file `10f72a8e886653c91ecb20dbdb98eeed168779166bada8ed8777bddb13966a1f`, executable SQL `eb13f614c7c04d87c1bcda4a4f57f51384c3c4831386d4fb16d0f44e2aa2e28a`. Record: `docs/history/2026-09-25-launch-sprint-2-waitlist-and-founding-access.md` (final section). Migration 2 is still **NOT APPLIED**, awaiting final Founder review.
+
+    **Founder ruling, 2026-09-26 (database gate closed):** MIGRATION 2: **APPLIED AND VERIFIED LIVE**. The corrected version (SHA-256 `10f72a8e…6a1f`) was applied through the SQL Editor: 16 columns, 12 constraints, RLS on, 0 policies, 0 rows; both functions have `anon` and `authenticated` execute false and `service_role` true. Record: `docs/history/2026-09-26-acquisitions-migration-applied.md`. Prerequisite 1 (both migrations verified) is now met, and so is prerequisite 2 (waitlist proof). Outstanding: Stripe test-mode setup, and the proofs for prerequisites 3 to 6; then prerequisites 7 to 10. Stripe remains unconfigured, no test payment has occurred, and public sales remain **CLOSED**.
+
+    **Founder ruling, 2026-09-26 (Stripe test-mode proof, Option A):** Stripe sandbox payment → access: **PASSED** (test payment, signed webhook, acquisition, `verified_acquisition` entitlement, activation, eligibility, authorization, confirmation handoff). The test identity's pre-existing ReMEMBER™ session resumed at its terminal `m2_to_m3` exit screen. That is not a commerce defect, and the session is preserved as-is (item 25). The full sandbox refund then revoked only that purchase's entitlement, deleted nothing, left other grants untouched, and was idempotent under replay; replaying the payment did not re-grant. Record: `docs/history/2026-09-26-stripe-test-mode-proof.md`. Prerequisites 3 to 6 are now met. Outstanding: 7 to 10. Public sales remain **CLOSED**.
+
+    **Founder ruling, 2026-09-27 (prerequisite 7, lost-dispute revocation):**
+    - Purchase-derived access is revoked **only** when Stripe reports a definitively lost dispute (`charge.dispute.closed`, `status = lost`). Dispute created, funds withdrawn, updated, under review, won, `warning_closed`, and inquiries or warnings do not revoke. There is no temporary suspension or reinstatement in Launch Sprint 2, and no broader dispute-management system.
+    - A migration is approved. A lost dispute is **not** recorded as a refund: the acquisition moves to `dispute_lost` with `dispute_lost_at` and `provider_dispute_id`. The entitlement revocation reason is exactly `Stripe dispute lost`. The acquisition and entitlement rows remain, and nothing is deleted.
+    - `charge.dispute.closed` with `won` or `warning_closed` returns 200 and changes nothing.
+    - V1 rule: `provider_dispute_id` records the lost dispute that moved the acquisition into `dispute_lost`. Several disputes against one payment are not modeled.
+    - Proof identity: Founder-controlled `9110bc4a…`. Its historical ReMEMBER™ session, refunded acquisition, and revoked entitlement stay untouched. The proof creates a new acquisition and entitlement through the normal sandbox purchase path.
+
+    **2026-09-27, implementation (NOT APPLIED):** `supabase/migrations/20260927120000_add_acquisition_dispute_lost.sql`, `revokeDisputedAcquisition()` in `utils/entitlements.ts`, and `charge.dispute.closed` handling in `app/api/stripe/webhook/route.ts`. It is Implemented, Verified Local: the dispute harness passed 23 of 23, the existing Sprint 2 harness still passed 62 of 62 with the migration applied, 4 of 4 mutants were caught, and `tsc` and ESLint are clean. Record: `docs/history/2026-09-27-dispute-lost-migration-proposed.md`. Prerequisite 7 stays **open** until the Founder applies and verifies the migration and the dispute sandbox proof passes (`docs/history/2026-09-27-dispute-sandbox-proof.md`). Public sales remain **CLOSED**.
+
+    **Founder ruling, 2026-09-27 (Migration 3 SQL review):** MIGRATION 3 (`supabase/migrations/20260927120000_add_acquisition_dispute_lost.sql`, SHA-256 `a70cc2f38ac63ad3477bcf628eb99e206907a80d55f52aa5608b31d0c6334318`) is **APPROVED FOR MANUAL APPLICATION**. It is **not yet applied**.
+
+    Approved scope decision: the replacement of `revoke_refunded_acquisition()` is approved. It keeps the same signature, return shape, security model, and grants, but now acts only while the acquisition status is `verified`.
+
+    Reason: once `dispute_lost` is a valid terminal acquisition outcome, a later refund must not overwrite that truthful outcome as `refunded`. Therefore:
+    - verified → refund = `refunded`
+    - verified → lost dispute = `dispute_lost`
+    - refunded → later lost dispute = no change
+    - dispute_lost → later refund = no change
+
+    This preserves the first recorded terminal reversal outcome. It also prevents the new outcome-integrity constraint from causing repeated webhook failures.
+
+    **Founder ruling, 2026-09-27: MIGRATION 3 APPLIED AND VERIFIED LIVE.**
+    - The Founder applied the approved file (SHA-256 `a70cc2f3…4318`) through the Supabase SQL Editor. Result: "Success. No rows returned."
+    - Live verification: 18 columns, 12 constraints; `dispute_lost_at` and `provider_dispute_id` present; new outcome check present, old refund check removed; RLS on, 0 policies.
+    - Rows: 2 acquisitions (1 `verified`, 1 `refunded`, 0 `dispute_lost`).
+    - Execute rights on both revoke functions: `anon` and `authenticated` false, `service_role` true.
+    - Record: `docs/history/2026-09-27-dispute-lost-migration-applied.md`.
+    - **Prerequisite 7 remains OPEN** until the Stripe sandbox lost-dispute proof passes (`docs/history/2026-09-27-dispute-sandbox-proof.md`). Public sales remain **CLOSED**.
+
+    **Founder ruling, 2026-09-28 (first lost-dispute sandbox attempt):** it is classified as an **interrupted test artifact**.
+    - The Claude-owned listener was stopped for low memory, and the Founder then completed a 0259 purchase with no listener running. The Stripe objects exist: `cs_test_a10esl0t6sC4htUl…`, `pi_3UKV3kDNmIXFPq5z0Nl5RJUO`, and dispute `du_1UKV3lDNmIXFPq5zU0GL3j7O` (`needs_response`).
+    - No acquisition or entitlement was written locally, and nothing else changed.
+    - Recovery attempts were stopped because the listener kept dying under memory pressure.
+    - There is no evidence of an application or database defect.
+    - The dispute is left untouched. **Prerequisite 7 remains PARTIAL / OPEN** until a clean re-run after a machine reboot passes.
+    - Record and re-run plan: `docs/history/2026-09-27-dispute-sandbox-proof.md`.
+
+    **2026-09-28, final local validation:**
+    - `tsc` clean.
+    - `next build` succeeded (51 routes).
+    - Dispute harness 23/23, Sprint 2 harness 62/62, 4/4 mutants caught.
+    - ESLint: 12 errors and 4 warnings project-wide. All are pre-existing and outside Sprint 2's changes; the one in a Sprint 2-touched file, `app/enter/page.tsx`, exists identically at HEAD.
+
+    **Founder batch lock, 2026-09-28 (prerequisites 8 and 9):**
+    - The whole commerce copy set is approved and implemented. It is listed in `docs/architecture/commerce.md`, "Commerce copy". It came from `docs/history/2026-09-28-commerce-copy-and-refund-policy-proposal.md`, with these changes:
+      - The support address is hello@thecodexverse.com.
+      - "access does not expire" is removed. No perpetual-access promise is made.
+      - No refund-arrival time is promised.
+    - The V1 Access & Refund Policy is approved and implemented at `/access-refund-policy`:
+      - first-person voice; one-time payment, not a subscription
+      - full refund within 14 days of purchase, requested at hello@thecodexverse.com, with no explanation required
+      - a full refund revokes the purchase-derived entitlement; a partial refund does not
+      - a refund does not automatically delete participant-created records
+      - a definitively lost dispute revokes purchase-derived access
+      - participants are invited to write first
+      - rights that cannot be waived under consumer law are preserved
+    - **Prerequisite 8: PASSED. Prerequisite 9: PASSED.**
+    - Prerequisite 7 remains PARTIAL / OPEN. Prerequisite 10 is NOT STARTED, and no OPEN FOUNDING ACCESS ruling has been issued. Public sales remain **CLOSED**.
+    - Rulings recorded in the same batch: item 26 (the `continue` label) is closed for V1, and item 27 (sandbox rows) is resolved.
+
+    Updated 2026-09-25, 2026-09-26, 2026-09-27, 2026-09-28.
+
+23. **Participant deletion, anonymization, and financial-record retention policy**
+    `Status: Future governance item (not solved in Launch Sprint 2)`
+    `Type: Governance / data retention`
+
+    `acquisitions.user_id` is `ON DELETE RESTRICT` (Founder ruling 2026-09-25), so an auth identity with a verified payment cannot be deleted until a policy exists. A future ruling is needed on participant deletion requests, anonymization of payment records, and how long financial records are retained.
+
+    Recorded 2026-09-25.
+
+24. **Waitlist rate limiting**
+    `Status: Bounded future hardening item`
+    `Type: Security / abuse prevention`
+
+    `POST /api/waitlist` has server validation, a 2 KB body limit, email normalization, and idempotency, but no rate limiting: none exists in the repository to reuse, and the Founder ruled (2026-09-25) not to add a dependency in Launch Sprint 2. Revisit if abuse appears.
+
+    Recorded 2026-09-25.
+
+25. **Returning purchaser whose ReMEMBER™ session is already at the terminal screen**
+    `Status: Open participant-experience question (not solved in Launch Sprint 2)`
+    `Type: Participant experience`
+
+    What should a returning purchaser see when their existing ReMEMBER™ session is already at the current terminal/exit screen (today `m2_to_m3`, which renders only "Return to the codeXverse")? Surfaced by the Stripe test-mode proof (`docs/history/2026-09-26-stripe-test-mode-proof.md`). This is a participant-experience ruling, separate from commerce verification. Nothing is changed until the Founder rules.
+
+    Recorded 2026-09-26.
+
+26. **ReMEMBER™ "continue" button label has no recorded Founder approval**
+    `Status: CLOSED for V1 (Founder ruling 2026-09-28): the existing label "continue" is Founder-approved. No code or other Entry Threshold copy changed.`
+    `Type: Participant-facing copy`
+
+    The Entry Threshold screens render a button labelled "continue" (`app/remember/RememberExperience.tsx:637`, the `handleSimpleContinue` button). The Entry Threshold text itself (for example `entry_01`, "You found yourself.") is Founder-approved, locked copy in `docs/design-specifications/pathway-two-remember-v1.0.md`, Part Two. The button label appears nowhere in that spec, so Founder approval is not established. Surfaced by the fresh-entry proof (`docs/history/2026-09-26-stripe-test-mode-proof.md`). The label stays unchanged until reviewed.
+
+    **Founder ruling, 2026-09-28:** the Entry Threshold button label `continue` is Founder-approved for V1. This closes the item for V1. No other Entry Threshold copy is altered, and Movement One™ is untouched.
+
+    Recorded 2026-09-27. Closed 2026-09-28.
+
+27. **Stripe sandbox test rows live in the production Supabase project**
+    `Status: RESOLVED (Founder ruling 2026-09-28): sandbox rows preserved; production reporting must filter on livemode`
+    `Type: Commerce + Access / data hygiene`
+
+    Local development uses the live Supabase project (`docs/implementation/builder-brief.md`, Current environment; that document also calls it "the production Supabase project"). Every Launch Sprint 2 sandbox proof therefore wrote to the production database:
+    - `e3601d38…`: refunded acquisition, with revoked entitlement `5958a85f…`
+    - `1715c86a…`: verified acquisition, with **active** entitlement `afe5e2f6…`. This gives Founder-controlled `016f2839…` real access in production.
+    - 1 waitlist row from the browser proof
+    - the `016f2839…` ReMEMBER™ session at `entry_01`
+
+    All acquisitions are `livemode = false`. Vercel's environment could not be inspected from the repository, so it is not verified that production uses this same project. The Founder must confirm that, then rule on whether to keep these rows as labelled test provenance, revoke the active test entitlement, or retain everything. Nothing is deleted without a ruling (`acquisitions.user_id ON DELETE RESTRICT`; item 23).
+
+    Recorded 2026-09-28.
+
+    **Founder ruling, 2026-09-28:**
+    - The existing sandbox proof rows in the live Supabase project are **PRESERVED** as historical commerce proof evidence: the sandbox acquisitions, sandbox entitlements, the waitlist proof row, and the Founder-controlled test sessions. They are distinguishable by `livemode = false`.
+    - Nothing is deleted.
+    - Production reporting and reconciliation must distinguish `livemode = false` from live transactions, and sandbox records are never treated as live revenue (`docs/architecture/commerce.md`, Known limits).
+    - Which Supabase project Vercel production uses still needs confirming when the live environment is set up. This is part of the production readiness checklist, not this item.
+
+    Resolved 2026-09-28.

@@ -56,7 +56,51 @@ type Database = {
       entitlements: TableOf<EntitlementRow>;
     };
     Views: Record<string, never>;
-    Functions: Record<string, never>;
+    // Defined in supabase/migrations/20260925120100_create_acquisitions.sql,
+    // plus revoke_disputed_acquisition from
+    // 20260927120000_add_acquisition_dispute_lost.sql.
+    Functions: {
+      record_verified_acquisition: {
+        Args: {
+          p_user_id: string;
+          p_product_key: string;
+          p_offer_key: string;
+          p_checkout_session_id: string;
+          p_payment_intent_id: string | null;
+          p_livemode: boolean;
+          p_amount: number;
+          p_currency: string;
+        };
+        Returns: {
+          acquisition_id: string;
+          granted_entitlement_id: string | null;
+          entitlement_created: boolean;
+        }[];
+      };
+      revoke_refunded_acquisition: {
+        Args: {
+          p_payment_intent_id: string;
+          p_reason: string;
+        };
+        Returns: {
+          acquisition_id: string;
+          revoked_entitlement_id: string | null;
+          changed: boolean;
+        }[];
+      };
+      revoke_disputed_acquisition: {
+        Args: {
+          p_payment_intent_id: string;
+          p_dispute_id: string;
+          p_reason: string;
+        };
+        Returns: {
+          acquisition_id: string;
+          revoked_entitlement_id: string | null;
+          changed: boolean;
+        }[];
+      };
+    };
   };
 };
 
@@ -234,4 +278,157 @@ export async function grantAdminEntitlement(
   }
 
   return data as EntitlementRow;
+}
+
+// ---------------------------------------------------------------------------
+// grantVerifiedAcquisitionEntitlement
+// ---------------------------------------------------------------------------
+// The 'verified_acquisition' counterpart to grantAdminEntitlement(), for
+// Launch Sprint 2. Its only caller is the Stripe webhook
+// (app/api/stripe/webhook/route.ts), and only after the webhook has
+// verified the event signature and checked the paid session against the
+// server-side offer (utils/offers.ts). Nothing from the browser, the
+// checkout success URL, or a query parameter can reach it.
+//
+// Records the acquisition and grants exactly one entitlement in one
+// database transaction (record_verified_acquisition). Idempotent on the
+// Stripe Checkout Session id: a repeated or concurrent webhook delivery
+// returns the existing acquisition with entitlementCreated = false.
+export type VerifiedAcquisitionParams = {
+  userId: string;
+  productKey: string;
+  offerKey: string;
+  checkoutSessionId: string;
+  paymentIntentId: string | null;
+  livemode: boolean;
+  amount: number;
+  currency: string;
+};
+
+export type VerifiedAcquisitionResult = {
+  acquisitionId: string;
+  entitlementId: string | null;
+  entitlementCreated: boolean;
+};
+
+export async function grantVerifiedAcquisitionEntitlement(
+  params: VerifiedAcquisitionParams
+): Promise<VerifiedAcquisitionResult> {
+  if (!params.userId) {
+    throw new Error('userId is required to record a verified acquisition.');
+  }
+  if (!params.productKey || !params.offerKey) {
+    throw new Error('productKey and offerKey are required.');
+  }
+  if (!params.checkoutSessionId) {
+    throw new Error('checkoutSessionId is required.');
+  }
+
+  const { data, error } = await getServiceClient().rpc(
+    'record_verified_acquisition',
+    {
+      p_user_id: params.userId,
+      p_product_key: params.productKey,
+      p_offer_key: params.offerKey,
+      p_checkout_session_id: params.checkoutSessionId,
+      p_payment_intent_id: params.paymentIntentId,
+      p_livemode: params.livemode,
+      p_amount: params.amount,
+      p_currency: params.currency,
+    }
+  );
+
+  const row = data?.[0];
+
+  if (error || !row) {
+    console.error('Entitlement service: verified acquisition failed:', {
+      code: error?.code,
+      message: error?.message,
+    });
+    throw new Error('Unable to record verified acquisition.');
+  }
+
+  return {
+    acquisitionId: row.acquisition_id,
+    entitlementId: row.granted_entitlement_id,
+    entitlementCreated: row.entitlement_created,
+  };
+}
+
+// ---------------------------------------------------------------------------
+// revokeRefundedAcquisition
+// ---------------------------------------------------------------------------
+// Called by the Stripe webhook for a fully refunded charge. Marks the
+// acquisition refunded and revokes only the entitlement it produced, through
+// the existing revocation columns (nothing is deleted). Other grants for the
+// same participant, such as an admin_grant, are untouched. Idempotent.
+//
+// Returns null when no acquisition carries this PaymentIntent.
+export async function revokeRefundedAcquisition(params: {
+  paymentIntentId: string;
+  reason: string;
+}): Promise<{ acquisitionId: string; changed: boolean } | null> {
+  if (!params.paymentIntentId || !params.reason.trim()) {
+    throw new Error('paymentIntentId and a non-empty reason are required.');
+  }
+
+  const { data, error } = await getServiceClient().rpc(
+    'revoke_refunded_acquisition',
+    {
+      p_payment_intent_id: params.paymentIntentId,
+      p_reason: params.reason,
+    }
+  );
+
+  if (error) {
+    console.error('Entitlement service: refund revocation failed:', {
+      code: error.code,
+      message: error.message,
+    });
+    throw new Error('Unable to revoke refunded acquisition.');
+  }
+
+  const row = data?.[0];
+  return row ? { acquisitionId: row.acquisition_id, changed: row.changed } : null;
+}
+
+// ---------------------------------------------------------------------------
+// revokeDisputedAcquisition
+// ---------------------------------------------------------------------------
+// Called by the Stripe webhook ONLY for a dispute Stripe reports as lost
+// (charge.dispute.closed, status 'lost'). Marks the acquisition
+// 'dispute_lost' (never 'refunded'), records the dispute id, and revokes
+// only the entitlement it produced. Nothing is deleted. Other grants, such
+// as an admin_grant, are untouched. Idempotent: an acquisition that is
+// already refunded or dispute_lost is left as it is.
+//
+// Returns null when no acquisition carries this PaymentIntent.
+export async function revokeDisputedAcquisition(params: {
+  paymentIntentId: string;
+  disputeId: string;
+  reason: string;
+}): Promise<{ acquisitionId: string; changed: boolean } | null> {
+  if (!params.paymentIntentId || !params.disputeId.trim() || !params.reason.trim()) {
+    throw new Error('paymentIntentId, disputeId, and a non-empty reason are required.');
+  }
+
+  const { data, error } = await getServiceClient().rpc(
+    'revoke_disputed_acquisition',
+    {
+      p_payment_intent_id: params.paymentIntentId,
+      p_dispute_id: params.disputeId,
+      p_reason: params.reason,
+    }
+  );
+
+  if (error) {
+    console.error('Entitlement service: dispute revocation failed:', {
+      code: error.code,
+      message: error.message,
+    });
+    throw new Error('Unable to revoke disputed acquisition.');
+  }
+
+  const row = data?.[0];
+  return row ? { acquisitionId: row.acquisition_id, changed: row.changed } : null;
 }

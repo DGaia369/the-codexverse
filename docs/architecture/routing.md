@@ -23,6 +23,8 @@
 - `/tier-2`
 - `/record`
 - `/remember`
+- `/remember/purchase` (Launch Sprint 2; closed unless `REMEMBER_SALES_STATE` is `test` or `open`)
+- `/remember/confirm` (Launch Sprint 2; post-checkout entry, grants nothing)
 
 ## API routes
 
@@ -34,7 +36,13 @@
 - `/api/return/cron/send-scheduled-emails`
 - `/api/remember/screen`
 - `/api/remember/response`
+- `/api/remember/checkout` (Launch Sprint 2; POST, creates a Stripe Checkout Session, grants nothing)
+- `/api/remember/access` (Launch Sprint 2; GET, returns only `{ authorized }`)
+- `/api/stripe/webhook` (Launch Sprint 2; signed Stripe events; the only path from payment to entitlement)
+- `/api/waitlist` (Launch Sprint 2; POST, records interest only)
 - `/auth/callback`
+
+See `docs/architecture/commerce.md` for the Launch Sprint 2 routes.
 
 ## Route Protection Mechanism
 
@@ -47,6 +55,8 @@ For paths matched by its internal `PROTECTED` list, `proxy.ts` constructs a Supa
 **Session refresh separated from route protection (2026-09-14):** `proxy.ts` also carries a second, independent list, `REFRESH_ONLY` — currently `/remember`, `/record`, `/record/evidence` — for authenticated Server Component pages that need their Supabase session refreshed by Proxy (since a Server Component cannot persist a refreshed cookie itself) but must never be redirected to `/enter` by Proxy; each of these pages owns its own unauthenticated-participant redirect logic instead. A path matching either `PROTECTED` or `REFRESH_ONLY` triggers the session-refresh branch; only a `PROTECTED` match can trigger the `/enter` redirect. See `docs/architecture/session-management.md` ("Session Refresh Mechanism") and `docs/history/2026-09-14-session-refresh-separation-applied.md` for the full record.
 
 **Day 7 destination preservation (2026-09-24):** for an unauthenticated request to `/door?from=day7` only, Proxy redirects to `/enter?next=day7` instead of `/enter`. `/enter` sends the participant to the hard-coded `/door?from=day7` after OTP verification when `next` is exactly `day7`, and to `/begin` otherwise. No general redirect parameter exists. See `docs/architecture/email-flow.md` ("Day 7 transition").
+
+**Founding Access continuation tokens (2026-09-25, Launch Sprint 2):** `/enter` now maps a fixed table of tokens, each to one hard-coded destination: `day7` → `/door?from=day7` (unchanged), `remember-checkout` → `/remember/purchase`, and `remember-confirm` → `/remember/confirm`. Any other value goes to `/begin`. The two new tokens are set by the pages themselves, not by Proxy. `/remember/purchase` and `/remember/confirm` are subpaths of `/remember`, so they fall under `REFRESH_ONLY`: the session is refreshed and there is no Proxy redirect. Verified 2026-09-25 (11 of 11): arbitrary URLs, protocol-relative URLs, case variants, and prototype-like values all fall back to `/begin`. See `docs/history/2026-09-25-launch-sprint-2-waitlist-and-founding-access.md`.
 
 Paths in neither list — currently including `/declaration`, `/between-threshold`, `/enter`, and every `/api/*` route — return immediately without any Supabase call, unchanged from before this separation. `/api/*` routes were not part of the session-refresh gap and were not added to `REFRESH_ONLY`: their own Route Handler context already persists refreshed cookies correctly (Route Handlers, unlike Server Components, are permitted to write cookies).
 

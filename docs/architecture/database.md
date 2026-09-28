@@ -283,6 +283,60 @@ A third gap identified by the same review — requiring `granted_by_user_id` to 
 
 See `docs/history/2026-09-14-commerce-access-entitlement-integrity-applied.md` for the full application and verification record.
 
+## Launch Sprint 2: `waitlist_interests` and `acquisitions`
+
+**Status:** Migrations written 2026-09-25 and proven against real PostgreSQL (PGlite) with the existing commerce migrations applied first. **`waitlist_interests`: Applied and Verified Live (2026-09-25)**: 7 columns, 4 constraints, RLS on, 0 policies; waitlist Founder browser proof PASSED (`docs/history/2026-09-25-waitlist-migration-applied.md`). **`acquisitions`: Applied and Verified Live (2026-09-26)**: 16 columns, 12 constraints, RLS on, 0 policies, 0 rows; both functions executable by `service_role` only (`docs/history/2026-09-26-acquisitions-migration-applied.md`). Application is gated (Founder ruling 2026-09-25) and done manually through the SQL Editor (open item 18 convention):
+
+1. `supabase/migrations/20260925120000_create_waitlist_interests.sql`: the Founder applies it, verifies schema, constraints, RLS, and zero policies, and runs the waitlist browser proof (duplicate behavior, and no auth user, entitlement, or ReMEMBER™ session created).
+2. `supabase/migrations/20260925120100_create_acquisitions.sql`: **Applied and Verified Live (2026-09-26).** It was previously held behind step 1 (Founder ruling 2026-09-25), and released for review only after Migration 1 was verified and the waitlist proof passed.
+
+Neither migration changes `products` or `entitlements`. `verified_acquisition` was already an allowed `source_type`. See `docs/architecture/commerce.md` for the flows.
+
+3. `supabase/migrations/20260927120000_add_acquisition_dispute_lost.sql`: **Applied and Verified Live (2026-09-27)**: 18 columns, 12 constraints, RLS on, 0 policies, 2 rows (1 `verified`, 1 `refunded`, 0 `dispute_lost`); both revoke functions executable by `service_role` only. It adds the lost-dispute outcome (Founder ruling 2026-09-27; open item 22, prerequisite 7). Records: `docs/history/2026-09-27-dispute-lost-migration-proposed.md` and `docs/history/2026-09-27-dispute-lost-migration-applied.md`. The rows marked *(migration 3)* below come from it.
+
+### `waitlist_interests`
+
+| Column | Type | Notes |
+|---|---|---|
+| `id` | `uuid` pk | |
+| `email` | `text not null` | check: stored trimmed and lowercased, length 3 to 320 |
+| `interest` | `text not null` | e.g. `pathway-two-remember`; free text, not a products FK, so the table is reusable |
+| `source` | `text not null` | e.g. `public_pathways_remember_card` |
+| `status` | `text not null default 'active'` | `active` or `withdrawn` |
+| `consent_at` | `timestamptz not null default now()` | set on first submission only |
+| `created_at` | `timestamptz not null default now()` | |
+
+Unique `(email, interest)`. No foreign keys to `auth.users`, `products`, `entitlements`, or any pathway table. RLS is enabled with no policies, so only the service role can access it.
+
+### `acquisitions`
+
+| Column | Type | Notes |
+|---|---|---|
+| `id` | `uuid` pk | internal acquisition id |
+| `user_id` | `uuid not null` | `auth.users(id) on delete restrict` (flagged for Founder confirmation) |
+| `product_id` | `uuid not null` | `products(id) on delete restrict` |
+| `offer_key` | `text not null` | e.g. `remember-founding-access` |
+| `provider` | `text not null default 'stripe'` | check: `stripe` |
+| `provider_checkout_session_id` | `text not null` | **unique**; the idempotency key |
+| `provider_payment_intent_id` | `text null` | **unique**; used to match refunds and disputes |
+| `livemode` | `boolean not null` | test or live payment |
+| `amount` | `integer not null` | minor units, > 0 |
+| `currency` | `text not null` | lowercase ISO code |
+| `status` | `text not null default 'verified'` | `verified` or `refunded`; *(migration 3)* also `dispute_lost` |
+| `entitlement_id` | `uuid null` | **unique**; `entitlements(id) on delete restrict`; the grant this purchase produced |
+| `created_at`, `verified_at`, `updated_at` | `timestamptz not null` | |
+| `refunded_at` | `timestamptz null` | check: set exactly when `status = 'refunded'` |
+| `dispute_lost_at` | `timestamptz null` | *(migration 3)* set exactly when `status = 'dispute_lost'` |
+| `provider_dispute_id` | `text null` | *(migration 3)* the Stripe dispute that moved the acquisition to `dispute_lost`; non-blank exactly when `status = 'dispute_lost'`. V1 does not keep a history of several disputes against one payment |
+
+*(Migration 3)* `acquisitions_refunded_at_matches_status_check` is replaced by `acquisitions_outcome_integrity_check`: `verified` carries no outcome columns, `refunded` carries only `refunded_at`, and `dispute_lost` carries only `dispute_lost_at` and `provider_dispute_id`. A lost dispute is never recorded as a refund.
+
+RLS is enabled with no policies. Three SQL functions are callable by `service_role` only (`EXECUTE` is revoked from `public`, `anon`, and `authenticated`, as verified in the harness and, for both revoke functions, live on 2026-09-27):
+
+- `record_verified_acquisition(...)` inserts or finds the acquisition by Checkout Session id, locks it, and grants one `verified_acquisition` entitlement if it has none and is not refunded. It is idempotent and safe under concurrent delivery. A replay must match every purchase-defining fact of the recorded row (`user_id`, `product_id`, `offer_key`, `provider_payment_intent_id`, `livemode`, `amount`, `currency`; null-safe `IS DISTINCT FROM`), or it fails loudly and changes nothing. This was a pre-application correction, 2026-09-26.
+- `revoke_refunded_acquisition(payment_intent_id, reason)` marks the acquisition refunded and revokes only its own entitlement through the existing revocation columns. It is idempotent. *(Migration 3: replaced with the same signature and grants so that it acts only on a `verified` acquisition. A `dispute_lost` acquisition is left as it is.)*
+- *(Migration 3)* `revoke_disputed_acquisition(payment_intent_id, dispute_id, reason)` locks the acquisition by PaymentIntent and, only if it is `verified`, marks it `dispute_lost` with `dispute_lost_at` and `provider_dispute_id`, then revokes only its own entitlement (reason `Stripe dispute lost`). A `refunded` or already `dispute_lost` acquisition is unchanged, so it is idempotent. Nothing is deleted. A replayed payment cannot re-grant, because `record_verified_acquisition` returns early once `entitlement_id` is set.
+
 ## Pending documentation
 
 - Full `declarations` schema

@@ -7,7 +7,10 @@ import {
   pathwayCardStyle,
   pathwayLabelStyle,
   statusPillStyle,
+  ctaStyle,
 } from '@/components/public/PublicProse';
+import RememberWaitlist from '@/components/public/RememberWaitlist';
+import { isPublicPurchaseOpen } from '@/utils/salesGate';
 
 // The Pathways — Founder-supplied copy, relocated here from Home v0.1 per
 // the Phase 1 information-architecture correction. Reproduced exactly as
@@ -15,6 +18,8 @@ import {
 // intentionally absent — this page is the public Pathways description
 // only.
 export default function PathwaysPage() {
+  const purchaseOpen = isPublicPurchaseOpen();
+
   return (
     <main>
       <Section first>
@@ -42,8 +47,23 @@ export default function PathwaysPage() {
             </p>
             <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flexWrap: 'wrap' }}>
               <span style={{ fontSize: '15px', color: CREAM }}>US$97 Founding Access</span>
-              <span style={statusPillStyle}>Opening Soon</span>
+              {!purchaseOpen && <span style={statusPillStyle}>Opening Soon</span>}
             </div>
+
+            {/* Launch Sprint 2 sales gate (utils/salesGate.ts). Closed: the
+                waitlist. Open (only after the Founder rules OPEN FOUNDING
+                ACCESS): the purchase path. The card itself makes no
+                authorization decision; /remember/purchase does. The open
+                CTA label is PROVISIONAL, pending Founder approval. */}
+            {purchaseOpen ? (
+              <div style={{ marginTop: '28px' }}>
+                <a href="/remember/purchase" style={ctaStyle}>
+                  BEGIN FOUNDING ACCESS
+                </a>
+              </div>
+            ) : (
+              <RememberWaitlist />
+            )}
           </div>
         </div>
       </Section>

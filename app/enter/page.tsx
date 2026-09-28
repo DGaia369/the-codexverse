@@ -5,6 +5,12 @@ import { createClient } from '@/utils/supabase/client';
 
 type Stage = 'capture' | 'sent' | 'verify';
 
+const NEXT_DESTINATIONS: Record<string, string> = {
+  day7: '/door?from=day7',
+  'remember-checkout': '/remember/purchase',
+  'remember-confirm': '/remember/confirm',
+};
+
 export default function EnterPage() {
   const [urlError, setUrlError] = useState('');
   const [email, setEmail] = useState('');
@@ -82,12 +88,17 @@ export default function EnterPage() {
       return;
     }
 
-    // Founder ruling 2026-09-24 (Launch Sprint 1, Ruling 4): only the fixed
-    // token next=day7 (set by proxy.ts for a logged-out Day 7 recipient) is
-    // honoured, and it maps to one hard-coded internal destination. Any other
-    // value is ignored, so this cannot become an open redirect.
+    // Founder ruling 2026-09-24 (Launch Sprint 1, Ruling 4): only fixed
+    // tokens are honoured, each mapped to one hard-coded internal
+    // destination. Any other value is ignored, so this cannot become an
+    // open redirect. day7 is set by proxy.ts for a logged-out Day 7
+    // recipient; the remember-* tokens (Launch Sprint 2) are set by the
+    // Founding Access purchase and confirmation pages.
     const next = new URLSearchParams(window.location.search).get('next');
-    window.location.href = next === 'day7' ? '/door?from=day7' : '/begin';
+    window.location.href =
+      next && Object.prototype.hasOwnProperty.call(NEXT_DESTINATIONS, next)
+        ? NEXT_DESTINATIONS[next]
+        : '/begin';
   }
 
   return (

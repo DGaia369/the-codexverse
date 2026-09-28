@@ -474,6 +474,47 @@ The Library of Yourself™ currently presents only Pathway One™ (Return to Sel
 
 ---
 
+## Launch Sprint 2 Report: Waitlist and Founding Access
+
+**Date:** 2026-09-25 (current state updated 2026-09-28)
+**Branch:** `feature/pathway-two-remember` (baseline `8ef4f6c`)
+**Status (current, 2026-09-28):** Implemented, Verified Local. Migrations 1, 2, and 3 are Applied and Verified Live.
+- **Stripe sandbox proofs PASSED:** payment → access, full refund → revocation, replay idempotency, post-refund block, fresh entry (`docs/history/2026-09-26-stripe-test-mode-proof.md`).
+- **Lost-dispute handling:** implemented and verified locally, with Migration 3 live. The first live sandbox proof was **interrupted** on 2026-09-28 by the listener repeatedly dying under memory pressure. That attempt is classified as an interrupted test artifact, and a clean re-run after a reboot is pending (`docs/history/2026-09-27-dispute-sandbox-proof.md`).
+- **OPEN FOUNDING ACCESS prerequisites:** 1–6 PASSED, 7 PARTIAL, 8 PASSED, 9 PASSED, 10 NOT STARTED (`docs/history/open-items.md` item 22). The commerce copy and the V1 refund policy were approved in the 2026-09-28 batch lock and are implemented.
+- **Local development writes to the live Supabase project,** so the sandbox test rows are in production. They are preserved by Founder ruling, and reporting must filter on `livemode` (item 27, resolved).
+- Public sales **CLOSED**. Committed and pushed to `feature/pathway-two-remember` on 2026-09-28. Not merged. Not deployed.
+
+*Earlier status (2026-09-26, superseded): database gate closed, no commerce test payment yet, Stripe not configured.*
+
+- **Waitlist:** implemented on the public ReMEMBER™ card with Founder-approved copy, through `POST /api/waitlist` into `waitlist_interests`. It is idempotent and does not reveal prior presence.
+- **Sales gate:** `REMEMBER_SALES_STATE` (server-only; `closed` by default, `test` with a test key only, `open` after the Founder ruling).
+- **Founding Access:** server-side offer (US$97 USD) → `/remember/purchase` → `POST /api/remember/checkout` → Stripe Checkout → signed webhook → `acquisitions` → `verified_acquisition` entitlement → `/remember/confirm` → `/remember`. A full refund revokes that purchase's own entitlement. A lost dispute (`charge.dispute.closed`, `lost` only) marks the acquisition `dispute_lost` and revokes that purchase's own entitlement (Migration 3, Founder ruling 2026-09-27).
+- **Verified (2026-09-28):**
+  - `tsc` clean.
+  - `next build` succeeded (51 routes).
+  - In-process harnesses against real PostgreSQL with all five commerce migrations: Sprint 2 62/62, disputes 23/23. 4/4 mutants caught.
+  - ESLint: 12 errors and 4 warnings project-wide, all pre-existing. The one in a Sprint 2-touched file (`app/enter/page.tsx:27`) exists identically at HEAD (line 21).
+  - *Earlier (2026-09-25): harness 50/50.*
+- **Sequence (gated, Founder ruling 2026-09-25):**
+  1. ~~The Founder applies Migration 1, verifies it, and passes the waitlist browser proof.~~ Done 2026-09-25.
+  2. ~~Only then Migration 2 (previously held) goes to Founder review and application.~~ Done 2026-09-26: Applied and Verified Live.
+  3. ~~Configure Stripe test keys and a webhook, and run the commerce browser proof.~~ Done 2026-09-26/27: all passed.
+  4. ~~Dispute ruling, implementation, Migration 3.~~ Done 2026-09-27: Applied and Verified Live.
+  5. **Next:**
+     - clean lost-dispute sandbox re-run after a reboot (prerequisite 7)
+     - ~~Founder review of commerce copy and the refund policy (8, 9)~~ approved and implemented 2026-09-28
+     - ~~ruling on sandbox rows in production (item 27)~~ preserved, 2026-09-28
+     - commit, deploy and live setup (see `docs/architecture/commerce.md`)
+     - the OPEN ruling (10)
+  See `docs/history/open-items.md` item 22.
+- **`/enter` token security proof (2026-09-25):** passed all 11 cases. Only the exact tokens `day7`, `remember-checkout`, and `remember-confirm` are special-cased; arbitrary URLs, protocol-relative URLs, case variants, and prototype-like values (`__proto__`, `constructor`, `toString`) fall back to `/begin`; `day7` is unchanged. Details: `docs/history/2026-09-25-launch-sprint-2-waitlist-and-founding-access.md`.
+- **Migration 2 pre-application integrity correction (2026-09-26):** the replay guard in `record_verified_acquisition()` now compares all purchase facts (`user_id`, `product_id`, `offer_key`, `provider_payment_intent_id`, `livemode`, `amount`, `currency`) with null-safe `IS DISTINCT FROM`, and stale comments were corrected. The harness passed 62 of 62. A mutation check showed the pre-fix SQL accepted all five mismatched replays, and the fixed SQL rejects them. New file SHA-256 `10f72a8e…6a1f`; executable-SQL fingerprint `eb13f614…e28a`. It was not applied at the time of the correction; the corrected version was later Applied and Verified Live (2026-09-26).
+
+See `docs/architecture/commerce.md` and `docs/history/2026-09-25-launch-sprint-2-waitlist-and-founding-access.md`.
+
+---
+
 ## Repository Memory Principle
 
 The repository is where constitutional memory lives.
